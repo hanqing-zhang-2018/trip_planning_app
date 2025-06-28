@@ -12,7 +12,10 @@ const avatars = [
 ]
 
 // You can change these invite codes to whatever you want
-const INVITE_CODE = 'HANQINGNB2025'
+const INVITE_CODES = {
+  'HANQINGNB2025': { tripGroup: 'Trip 1', description: 'First Trip Group' },
+  'HANQING2NDNB2025': { tripGroup: 'Trip 2', description: 'Second Trip Group' }
+}
 
 // Admin codes linked to specific admin identities and trip groups
 const ADMIN_CODES = {
@@ -51,17 +54,22 @@ function LandingPage({ onLogin, participants }) {
   const [inviteError, setInviteError] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
   const [adminIdentity, setAdminIdentity] = useState(null)
+  const [currentTripGroup, setCurrentTripGroup] = useState(null)
 
   const handleInviteSubmit = (e) => {
     e.preventDefault()
     const code = inviteCode.trim().toUpperCase()
     
-    if (code === INVITE_CODE) {
+    if (INVITE_CODES[code]) {
+      // Regular user with specific trip group
+      setCurrentTripGroup(INVITE_CODES[code].tripGroup)
       setShowInviteForm(false)
       setInviteError('')
       setIsAdmin(false)
       setAdminIdentity(null)
     } else if (ADMIN_CODES[code]) {
+      // Admin user with specific trip group
+      setCurrentTripGroup(ADMIN_CODES[code].tripGroup)
       setShowInviteForm(false)
       setInviteError('')
       setIsAdmin(true)
@@ -81,7 +89,7 @@ function LandingPage({ onLogin, participants }) {
         name: name.trim(),
         avatar: selectedAvatar,
         isAdmin: isAdmin,
-        tripGroup: adminIdentity?.tripGroup || 'default'
+        tripGroup: currentTripGroup || 'default'
       }
       onLogin(userData)
     }
@@ -90,14 +98,13 @@ function LandingPage({ onLogin, participants }) {
   const handleExistingUserLogin = (participant) => {
     const userData = {
       ...participant,
-      tripGroup: adminIdentity?.tripGroup || participant.tripGroup || 'default'
+      tripGroup: currentTripGroup || participant.tripGroup || 'default'
     }
     onLogin(userData)
   }
 
   // Filter out admin users from the existing users list for normal users
   // Also filter by trip group
-  const currentTripGroup = adminIdentity?.tripGroup || 'default'
   const visibleParticipants = isAdmin 
     ? participants.filter(p => p.tripGroup === currentTripGroup)
     : participants.filter(p => !p.isAdmin && p.tripGroup === currentTripGroup)
@@ -144,6 +151,23 @@ function LandingPage({ onLogin, participants }) {
       <div className="pixel-card">
         <h1 className="pixel-title">🎉 Trip Pixel App 🎉</h1>
         
+        {!isAdmin && currentTripGroup && (
+          <div style={{ 
+            background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))', 
+            color: 'white', 
+            padding: '12px', 
+            borderRadius: 'var(--border-radius)', 
+            marginBottom: '24px',
+            textAlign: 'center',
+            fontWeight: 'bold'
+          }}>
+            🎉 Welcome to {currentTripGroup}!
+            <div style={{ fontSize: '0.8rem', marginTop: '4px', opacity: 0.9 }}>
+              {INVITE_CODES[inviteCode.trim().toUpperCase()]?.description || 'Trip Group'}
+            </div>
+          </div>
+        )}
+        
         {isAdmin && (
           <div style={{ 
             background: 'linear-gradient(135deg, var(--warning-color), var(--error-color))', 
@@ -154,7 +178,7 @@ function LandingPage({ onLogin, participants }) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👑 Admin Mode - {adminIdentity?.tripGroup || 'Trip Group'} - You have special privileges!
+            👑 Admin Mode - {currentTripGroup || 'Trip Group'} - You have special privileges!
             {adminIdentity?.description && (
               <div style={{ fontSize: '0.8rem', marginTop: '4px', opacity: 0.9 }}>
                 {adminIdentity.description}

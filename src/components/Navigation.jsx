@@ -15,7 +15,8 @@ function Navigation({
   participants,
   removeUser,
   clearAllData,
-  clearUserCache
+  clearUserCache,
+  syncTripTitle
 }) {
   const location = useLocation()
   const navigate = useNavigate()
@@ -43,6 +44,16 @@ function Navigation({
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* Sync button for all users */}
+              <button
+                className="pixel-button"
+                onClick={syncTripTitle}
+                style={{ padding: '8px 12px', fontSize: '12px', background: 'var(--accent-color)' }}
+                title="Sync trip title from other devices"
+              >
+                🔄
+              </button>
+              
               {isAdmin && (
                 <>
                   <button

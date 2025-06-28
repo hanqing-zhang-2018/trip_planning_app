@@ -124,6 +124,17 @@ function App() {
     }
   }
 
+  const syncTripTitle = () => {
+    const tripGroup = currentUser?.tripGroup || 'default'
+    const storedTitle = localStorage.getItem(`tripTitle_${tripGroup}`)
+    if (storedTitle && storedTitle !== tripTitle) {
+      setTripTitle(storedTitle)
+      alert(`Trip title synced: "${storedTitle}"`)
+    } else {
+      alert('Trip title is already up to date!')
+    }
+  }
+
   const clearAllData = () => {
     if (window.confirm('Are you sure you want to clear ALL data for this trip group? This cannot be undone!')) {
       // Clear all localStorage data for this trip group
@@ -175,6 +186,7 @@ function App() {
           removeUser={removeUser}
           clearAllData={clearAllData}
           clearUserCache={clearUserCache}
+          syncTripTitle={syncTripTitle}
         />
         <div className="container">
           <Routes>
