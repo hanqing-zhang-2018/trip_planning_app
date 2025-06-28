@@ -14,13 +14,32 @@ const avatars = [
 // You can change these invite codes to whatever you want
 const INVITE_CODE = 'HANQINGNB2025'
 
-// Admin codes linked to specific admin identities
+// Admin codes linked to specific admin identities and trip groups
 const ADMIN_CODES = {
-  'ADMIN2025': { name: 'Admin', avatar: '👑', isAdmin: true },
-  'EMI2025': { name: 'Emily', avatar: '🐶', isAdmin: true },
+  'HANQING2025': { 
+    name: 'Hanqi', 
+    avatar: '👑', 
+    isAdmin: true, 
+    tripGroup: 'Trip 1',
+    description: 'First Trip Group'
+  },
+  'HANQING2ND2025': { 
+    name: 'Hanqi', 
+    avatar: '👑', 
+    isAdmin: true, 
+    tripGroup: 'Trip 2',
+    description: 'Second Trip Group'
+  },
+  'EMI2025': { 
+    name: 'Emily', 
+    avatar: '🐶', 
+    isAdmin: true, 
+    tripGroup: 'Trip 1',
+    description: 'First Trip Group'
+  },
 //   'MONA2025': { name: 'Mona', avatar: '🌸', isAdmin: true },
   // Add more admin codes as needed
-  // 'CODE2025': { name: 'AdminName', avatar: '🎯', isAdmin: true },
+  // 'CODE2025': { name: 'AdminName', avatar: '🎯', isAdmin: true, tripGroup: 'Trip X', description: 'Trip Description' },
 }
 
 function LandingPage({ onLogin, participants }) {
@@ -61,18 +80,27 @@ function LandingPage({ onLogin, participants }) {
       const userData = {
         name: name.trim(),
         avatar: selectedAvatar,
-        isAdmin: isAdmin
+        isAdmin: isAdmin,
+        tripGroup: adminIdentity?.tripGroup || 'default'
       }
       onLogin(userData)
     }
   }
 
   const handleExistingUserLogin = (participant) => {
-    onLogin(participant)
+    const userData = {
+      ...participant,
+      tripGroup: adminIdentity?.tripGroup || participant.tripGroup || 'default'
+    }
+    onLogin(userData)
   }
 
   // Filter out admin users from the existing users list for normal users
-  const visibleParticipants = isAdmin ? participants : participants.filter(p => !p.isAdmin)
+  // Also filter by trip group
+  const currentTripGroup = adminIdentity?.tripGroup || 'default'
+  const visibleParticipants = isAdmin 
+    ? participants.filter(p => p.tripGroup === currentTripGroup)
+    : participants.filter(p => !p.isAdmin && p.tripGroup === currentTripGroup)
 
   if (showInviteForm) {
     return (
@@ -126,7 +154,12 @@ function LandingPage({ onLogin, participants }) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👑 Admin Mode - You have special privileges!
+            👑 Admin Mode - {adminIdentity?.tripGroup || 'Trip Group'} - You have special privileges!
+            {adminIdentity?.description && (
+              <div style={{ fontSize: '0.8rem', marginTop: '4px', opacity: 0.9 }}>
+                {adminIdentity.description}
+              </div>
+            )}
           </div>
         )}
         

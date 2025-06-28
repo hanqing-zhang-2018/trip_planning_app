@@ -23,38 +23,62 @@ function App() {
     // Load user from localStorage
     const savedUser = localStorage.getItem('tripUser')
     if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser))
-    }
+      const user = JSON.parse(savedUser)
+      setCurrentUser(user)
+      
+      // Load trip-group specific data
+      const tripGroup = user.tripGroup || 'default'
+      
+      // Load participants from localStorage for this trip group
+      const savedParticipants = localStorage.getItem(`tripParticipants_${tripGroup}`)
+      if (savedParticipants) {
+        setParticipants(JSON.parse(savedParticipants))
+      }
 
-    // Load participants from localStorage
-    const savedParticipants = localStorage.getItem('tripParticipants')
-    if (savedParticipants) {
-      setParticipants(JSON.parse(savedParticipants))
-    }
+      // Load trip title from localStorage for this trip group
+      const savedTitle = localStorage.getItem(`tripTitle_${tripGroup}`)
+      if (savedTitle) {
+        setTripTitle(savedTitle)
+      }
+    } else {
+      // Load participants from localStorage (legacy support)
+      const savedParticipants = localStorage.getItem('tripParticipants')
+      if (savedParticipants) {
+        setParticipants(JSON.parse(savedParticipants))
+      }
 
-    // Load trip title from localStorage
-    const savedTitle = localStorage.getItem('tripTitle')
-    if (savedTitle) {
-      setTripTitle(savedTitle)
+      // Load trip title from localStorage (legacy support)
+      const savedTitle = localStorage.getItem('tripTitle')
+      if (savedTitle) {
+        setTripTitle(savedTitle)
+      }
     }
   }, [])
 
   const handleLogin = (user) => {
-    setCurrentUser(user)
-    localStorage.setItem('tripUser', JSON.stringify(user))
+    // Add trip group to user data if it exists
+    const userWithTripGroup = {
+      ...user,
+      tripGroup: user.tripGroup || 'default'
+    }
+    
+    setCurrentUser(userWithTripGroup)
+    localStorage.setItem('tripUser', JSON.stringify(userWithTripGroup))
     
     // Add user to participants if not already there
-    if (!participants.find(p => p.name === user.name)) {
-      const updatedParticipants = [...participants, user]
+    if (!participants.find(p => p.name === user.name && p.tripGroup === userWithTripGroup.tripGroup)) {
+      const updatedParticipants = [...participants, userWithTripGroup]
       setParticipants(updatedParticipants)
-      localStorage.setItem('tripParticipants', JSON.stringify(updatedParticipants))
+      localStorage.setItem(`tripParticipants_${userWithTripGroup.tripGroup}`, JSON.stringify(updatedParticipants))
     } else {
       // Update existing user's avatar and admin status if they're logging in again
       const updatedParticipants = participants.map(p => 
-        p.name === user.name ? { ...p, avatar: user.avatar, isAdmin: user.isAdmin } : p
+        p.name === user.name && p.tripGroup === userWithTripGroup.tripGroup 
+          ? { ...p, avatar: user.avatar, isAdmin: user.isAdmin } 
+          : p
       )
       setParticipants(updatedParticipants)
-      localStorage.setItem('tripParticipants', JSON.stringify(updatedParticipants))
+      localStorage.setItem(`tripParticipants_${userWithTripGroup.tripGroup}`, JSON.stringify(updatedParticipants))
     }
   }
 
@@ -63,11 +87,16 @@ function App() {
     localStorage.removeItem('tripUser')
   }
 
+  const getTripGroupKey = (baseKey) => {
+    const tripGroup = currentUser?.tripGroup || 'default'
+    return `${baseKey}_${tripGroup}`
+  }
+
   const removeUser = (userName) => {
     if (window.confirm(`Are you sure you want to remove ${userName} and all their data?`)) {
       const updatedParticipants = participants.filter(p => p.name !== userName)
       setParticipants(updatedParticipants)
-      localStorage.setItem('tripParticipants', JSON.stringify(updatedParticipants))
+      localStorage.setItem(`tripParticipants_${currentUser.tripGroup}`, JSON.stringify(updatedParticipants))
       
       // Remove user's data from all components
       const keysToClean = [
@@ -75,12 +104,12 @@ function App() {
       ]
       
       keysToClean.forEach(key => {
-        const data = localStorage.getItem(key)
+        const data = localStorage.getItem(getTripGroupKey(key))
         if (data) {
           const parsedData = JSON.parse(data)
           // Remove items created by this user
           const cleanedData = parsedData.filter(item => item.author !== userName)
-          localStorage.setItem(key, JSON.stringify(cleanedData))
+          localStorage.setItem(getTripGroupKey(key), JSON.stringify(cleanedData))
         }
       })
     }
@@ -89,20 +118,20 @@ function App() {
   const updateTripTitle = () => {
     if (newTitle.trim()) {
       setTripTitle(newTitle.trim())
-      localStorage.setItem('tripTitle', newTitle.trim())
+      localStorage.setItem(getTripGroupKey('tripTitle'), newTitle.trim())
       setIsEditingTitle(false)
       setNewTitle('')
     }
   }
 
   const clearAllData = () => {
-    if (window.confirm('Are you sure you want to clear ALL data? This cannot be undone!')) {
-      // Clear all localStorage data
+    if (window.confirm('Are you sure you want to clear ALL data for this trip group? This cannot be undone!')) {
+      // Clear all localStorage data for this trip group
       const keysToClear = [
         'tripAirbnbs', 'tripExpenses', 'tripFoodWishlist', 'tripActivities',
         'tripParticipants', 'tripTitle', 'tripUser'
       ]
-      keysToClear.forEach(key => localStorage.removeItem(key))
+      keysToClear.forEach(key => localStorage.removeItem(getTripGroupKey(key)))
       
       // Reset state
       setParticipants([])
@@ -112,10 +141,10 @@ function App() {
   }
 
   const clearUserCache = () => {
-    if (window.confirm('Clear cached user data? This will force all users to log in again with updated avatars.')) {
-      // Clear user-related localStorage data
-      localStorage.removeItem('tripUser')
-      localStorage.removeItem('tripParticipants')
+    if (window.confirm('Clear cached user data for this trip group? This will force all users to log in again with updated avatars.')) {
+      // Clear user-related localStorage data for this trip group
+      localStorage.removeItem(getTripGroupKey('tripUser'))
+      localStorage.removeItem(getTripGroupKey('tripParticipants'))
       
       // Reset user state
       setCurrentUser(null)
