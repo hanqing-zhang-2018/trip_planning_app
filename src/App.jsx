@@ -12,29 +12,6 @@ import './App.css'
 function App() {
   console.log('App component is loading...')
   
-  // Extremely minimal test
-  return (
-    <div style={{ 
-      padding: '20px', 
-      background: 'red', 
-      color: 'white', 
-      fontSize: '24px',
-      textAlign: 'center',
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      <div>
-        <h1>🚨 EMERGENCY TEST 🚨</h1>
-        <p>RED BACKGROUND = React is working!</p>
-        <p>If you see this, the issue is with CSS or components.</p>
-        <p>If you see blank, React is broken.</p>
-      </div>
-    </div>
-  )
-  
-  /*
   const [currentUser, setCurrentUser] = useState(null)
   const [participants, setParticipants] = useState([])
   const [tripTitle, setTripTitle] = useState('Trip Pixel App')
@@ -183,7 +160,6 @@ function App() {
       </div>
     </Router>
   )
-  */
 }
 
 export default App
