@@ -12,6 +12,28 @@ import './App.css'
 function App() {
   console.log('App component is loading...')
   
+  // Temporary test - just render a simple div to see if React is working
+  return (
+    <div style={{ 
+      padding: '20px', 
+      background: 'white', 
+      color: 'black', 
+      fontSize: '24px',
+      textAlign: 'center',
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      <div>
+        <h1>🚨 TEST MODE 🚨</h1>
+        <p>If you can see this, React is working!</p>
+        <p>App component loaded successfully.</p>
+      </div>
+    </div>
+  )
+  
+  /*
   const [currentUser, setCurrentUser] = useState(null)
   const [participants, setParticipants] = useState([])
   const [tripTitle, setTripTitle] = useState('Trip Pixel App')
@@ -160,6 +182,7 @@ function App() {
       </div>
     </Router>
   )
+  */
 }
 
 export default App
