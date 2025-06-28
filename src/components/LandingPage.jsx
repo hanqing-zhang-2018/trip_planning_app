@@ -19,30 +19,22 @@ const INVITE_CODES = {
 
 // Admin codes linked to specific admin identities and trip groups
 const ADMIN_CODES = {
-  'HANQING2025': { 
-    id: 'hanqi_admin_trip1',
-    name: 'Hanqi', 
-    avatar: '👑', 
-    isAdmin: true, 
-    tripGroup: 'Trip 1',
-    description: 'July 18-20 Trip'
-  },
-  'JULY4TH2025ADM': { 
-    id: '_admin_trip2',
-    name: 'Hanqi', 
-    avatar: '👑', 
-    isAdmin: true, 
-    tripGroup: 'Trip 2',
-    description: 'July 4th Trip'
-  },
-  'EMI2025': { 
-    id: 'emi_admin_trip1',
+  'JULY18ADM': { 
+    id: 'admin_trip1',
     name: 'Emily', 
     avatar: '🐶', 
     isAdmin: true, 
     tripGroup: 'Trip 1',
     description: 'July 18-20 Trip'
   },
+  'JULY4ADM': { 
+    id: 'admin_trip2',
+    name: 'Emily', 
+    avatar: '🐶', 
+    isAdmin: true, 
+    tripGroup: 'Trip 2',
+    description: 'July 4th Trip'
+  }
 //   'MONA2025': { name: 'Mona', avatar: '🌸', isAdmin: true },
   // Add more admin codes as needed
   // 'CODE2025': { id: 'unique_id', name: 'AdminName', avatar: '🎯', isAdmin: true, tripGroup: 'Trip X', description: 'Trip Description' },
@@ -62,6 +54,12 @@ function LandingPage({ onLogin, participants }) {
   const handleInviteSubmit = (e) => {
     e.preventDefault()
     const code = inviteCode.trim().toUpperCase()
+    
+    console.log('Submitted code:', code)
+    console.log('Available admin codes:', Object.keys(ADMIN_CODES))
+    console.log('Available invite codes:', Object.keys(INVITE_CODES))
+    console.log('Is admin code?', ADMIN_CODES[code])
+    console.log('Is invite code?', INVITE_CODES[code])
     
     if (INVITE_CODES[code]) {
       // Regular user with specific trip group
