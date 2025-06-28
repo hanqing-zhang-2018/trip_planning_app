@@ -12,12 +12,12 @@ import './App.css'
 function App() {
   console.log('App component is loading...')
   
-  // Temporary test - just render a simple div to see if React is working
+  // Extremely minimal test
   return (
     <div style={{ 
       padding: '20px', 
-      background: 'white', 
-      color: 'black', 
+      background: 'red', 
+      color: 'white', 
       fontSize: '24px',
       textAlign: 'center',
       minHeight: '100vh',
@@ -26,9 +26,10 @@ function App() {
       justifyContent: 'center'
     }}>
       <div>
-        <h1>🚨 TEST MODE 🚨</h1>
-        <p>If you can see this, React is working!</p>
-        <p>App component loaded successfully.</p>
+        <h1>🚨 EMERGENCY TEST 🚨</h1>
+        <p>RED BACKGROUND = React is working!</p>
+        <p>If you see this, the issue is with CSS or components.</p>
+        <p>If you see blank, React is broken.</p>
       </div>
     </div>
   )
