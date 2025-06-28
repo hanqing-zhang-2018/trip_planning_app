@@ -20,13 +20,15 @@ const INVITE_CODES = {
 // Admin codes linked to specific admin identities and trip groups
 const ADMIN_CODES = {
   'HANQING2025': { 
+    id: 'hanqi_admin_trip1',
     name: 'Hanqi', 
     avatar: '👑', 
     isAdmin: true, 
     tripGroup: 'Trip 1',
     description: 'July 18-20 Trip'
   },
-  'HANQING2ND2025': { 
+  'JULY4TH2025ADM': { 
+    id: '_admin_trip2',
     name: 'Hanqi', 
     avatar: '👑', 
     isAdmin: true, 
@@ -34,6 +36,7 @@ const ADMIN_CODES = {
     description: 'July 4th Trip'
   },
   'EMI2025': { 
+    id: 'emi_admin_trip1',
     name: 'Emily', 
     avatar: '🐶', 
     isAdmin: true, 
@@ -42,7 +45,7 @@ const ADMIN_CODES = {
   },
 //   'MONA2025': { name: 'Mona', avatar: '🌸', isAdmin: true },
   // Add more admin codes as needed
-  // 'CODE2025': { name: 'AdminName', avatar: '🎯', isAdmin: true, tripGroup: 'Trip X', description: 'Trip Description' },
+  // 'CODE2025': { id: 'unique_id', name: 'AdminName', avatar: '🎯', isAdmin: true, tripGroup: 'Trip X', description: 'Trip Description' },
 }
 
 function LandingPage({ onLogin, participants }) {
@@ -85,7 +88,11 @@ function LandingPage({ onLogin, participants }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (name.trim() && selectedAvatar) {
+      // Generate a unique ID for this user
+      const userId = `${name.trim()}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      
       const userData = {
+        id: userId,
         name: name.trim(),
         avatar: selectedAvatar,
         isAdmin: isAdmin,
@@ -192,13 +199,33 @@ function LandingPage({ onLogin, participants }) {
             <div className="avatar-grid">
               {visibleParticipants.map((participant, index) => (
                 <div
-                  key={index}
+                  key={participant.id}
                   className="avatar-option"
                   onClick={() => handleExistingUserLogin(participant)}
                   title={`Login as ${participant.name}${participant.isAdmin ? ' (Admin)' : ''}`}
                 >
                   {participant.avatar}
                   {participant.isAdmin && <span style={{ fontSize: '10px', position: 'absolute', top: '-5px', right: '-5px' }}>👑</span>}
+                  {/* Show a small identifier for users with the same name */}
+                  {visibleParticipants.filter(p => p.name === participant.name).length > 1 && (
+                    <span style={{ 
+                      fontSize: '8px', 
+                      position: 'absolute', 
+                      bottom: '-2px', 
+                      right: '-2px',
+                      background: 'var(--primary-color)',
+                      color: 'white',
+                      borderRadius: '50%',
+                      width: '12px',
+                      height: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 'bold'
+                    }}>
+                      {visibleParticipants.filter(p => p.name === participant.name).findIndex(p => p.id === participant.id) + 1}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

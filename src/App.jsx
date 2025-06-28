@@ -89,14 +89,14 @@ function App() {
     }
     
     // Add user to participants if not already there
-    if (!participants.find(p => p.name === user.name && p.tripGroup === userWithTripGroup.tripGroup)) {
+    if (!participants.find(p => p.id === user.id && p.tripGroup === userWithTripGroup.tripGroup)) {
       const updatedParticipants = [...participants, userWithTripGroup]
       setParticipants(updatedParticipants)
       localStorage.setItem(`tripParticipants_${userWithTripGroup.tripGroup}`, JSON.stringify(updatedParticipants))
     } else {
       // Update existing user's avatar and admin status if they're logging in again
       const updatedParticipants = participants.map(p => 
-        p.name === user.name && p.tripGroup === userWithTripGroup.tripGroup 
+        p.id === user.id && p.tripGroup === userWithTripGroup.tripGroup 
           ? { ...p, avatar: user.avatar, isAdmin: user.isAdmin } 
           : p
       )
@@ -115,9 +115,12 @@ function App() {
     return `${baseKey}_${tripGroup}`
   }
 
-  const removeUser = (userName) => {
-    if (window.confirm(`Are you sure you want to remove ${userName} and all their data?`)) {
-      const updatedParticipants = participants.filter(p => p.name !== userName)
+  const removeUser = (userId) => {
+    const userToRemove = participants.find(p => p.id === userId)
+    if (!userToRemove) return
+    
+    if (window.confirm(`Are you sure you want to remove ${userToRemove.name} and all their data?`)) {
+      const updatedParticipants = participants.filter(p => p.id !== userId)
       setParticipants(updatedParticipants)
       localStorage.setItem(`tripParticipants_${currentUser.tripGroup}`, JSON.stringify(updatedParticipants))
       
@@ -131,7 +134,7 @@ function App() {
         if (data) {
           const parsedData = JSON.parse(data)
           // Remove items created by this user
-          const cleanedData = parsedData.filter(item => item.author !== userName)
+          const cleanedData = parsedData.filter(item => item.authorId !== userId)
           localStorage.setItem(getTripGroupKey(key), JSON.stringify(cleanedData))
         }
       })

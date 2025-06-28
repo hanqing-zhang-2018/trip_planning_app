@@ -35,6 +35,7 @@ function ActivitiesWishlist({ participants, currentUser }) {
         completed: false,
         confirmed: false,
         date: new Date().toISOString(),
+        createdById: currentUser.id,
         createdBy: currentUser.name
       }
       saveActivities([...activities, activity])
@@ -59,7 +60,7 @@ function ActivitiesWishlist({ participants, currentUser }) {
 
   const deleteActivity = (activityId) => {
     const activity = activities.find(a => a.id === activityId)
-    const canDelete = currentUser.isAdmin || activity.createdBy === currentUser.name
+    const canDelete = currentUser.isAdmin || activity.createdById === currentUser.id
     
     if (canDelete && window.confirm('Are you sure you want to delete this activity?')) {
       saveActivities(activities.filter(activity => activity.id !== activityId))
@@ -304,7 +305,7 @@ function ActivityItem({ activity, participants, onToggleStatus, onDelete, curren
           {activity.confirmed && '✓'}
         </button>
         
-        {currentUser.isAdmin || activity.createdBy === currentUser.name && (
+        {currentUser.isAdmin || activity.createdById === currentUser.id && (
           <button
             className="pixel-button"
             onClick={() => onDelete(activity.id)}

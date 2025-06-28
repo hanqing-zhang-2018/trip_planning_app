@@ -31,18 +31,15 @@ function AirbnbVoting({ participants, currentUser }) {
     if (newLink.trim() && newTitle.trim()) {
       const newAirbnb = {
         id: Date.now(),
-        link: newLink.trim(),
         title: newTitle.trim(),
         description: newDescription.trim(),
-        price: newPrice.trim() || 'Price not available',
-        score: newScore.trim() || null,
-        reviewCount: newReviewCount.trim() || null,
-        bedrooms: newBedrooms.trim() || null,
-        bathrooms: newBathrooms.trim() || null,
-        guests: newGuests.trim() || null,
-        votes: { like: [], dislike: [] },
-        comments: [],
-        author: currentUser.name
+        price: newPrice.trim(),
+        link: newLink.trim(),
+        authorId: currentUser.id,
+        author: currentUser.name,
+        votes: [],
+        dislikes: [],
+        comments: []
       }
       
       saveAirbnbs([...airbnbs, newAirbnb])
@@ -84,7 +81,7 @@ function AirbnbVoting({ participants, currentUser }) {
 
   const deleteAirbnb = (airbnbId) => {
     const airbnb = airbnbs.find(a => a.id === airbnbId)
-    const canDelete = currentUser.isAdmin || airbnb.author === currentUser.name
+    const canDelete = currentUser.isAdmin || airbnb.authorId === currentUser.id
     
     if (canDelete && window.confirm('Are you sure you want to delete this property?')) {
       saveAirbnbs(airbnbs.filter(airbnb => airbnb.id !== airbnbId))
@@ -272,7 +269,7 @@ function AirbnbVoting({ participants, currentUser }) {
 function AirbnbCard({ airbnb, participants, onVote, onDelete, currentUser }) {
   const totalVotes = airbnb.votes.like.length + airbnb.votes.dislike.length
   const score = airbnb.votes.like.length - airbnb.votes.dislike.length
-  const canDelete = currentUser.isAdmin || airbnb.author === currentUser.name
+  const canDelete = currentUser.isAdmin || airbnb.authorId === currentUser.id
 
   return (
     <div className="pixel-card">

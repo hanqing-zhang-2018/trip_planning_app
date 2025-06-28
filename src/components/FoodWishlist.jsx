@@ -35,6 +35,7 @@ function FoodWishlist({ participants, currentUser }) {
         completed: false,
         comment: '',
         date: new Date().toISOString(),
+        createdById: currentUser.id,
         createdBy: currentUser.name
       }
       saveWishlist([...wishlistItems, wishlistItem])
@@ -70,7 +71,7 @@ function FoodWishlist({ participants, currentUser }) {
 
   const deleteItem = (itemId) => {
     const item = wishlistItems.find(i => i.id === itemId)
-    const canDelete = currentUser.isAdmin || item.createdBy === currentUser.name
+    const canDelete = currentUser.isAdmin || item.createdById === currentUser.id
     
     if (canDelete && window.confirm('Are you sure you want to delete this item?')) {
       saveWishlist(wishlistItems.filter(item => item.id !== itemId))
@@ -400,7 +401,7 @@ function WishlistItem({ item, participants, onToggleStatus, onDelete, editingCom
       </div>
       
       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-        {currentUser.isAdmin || item.createdBy === currentUser.name && (
+        {currentUser.isAdmin || item.createdById === currentUser.id && (
           <button
             className="pixel-button"
             onClick={() => onDelete(item.id)}

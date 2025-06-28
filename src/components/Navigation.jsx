@@ -185,7 +185,7 @@ function Navigation({
             <div style={{ display: 'grid', gap: '12px' }}>
               {participants.map((participant) => (
                 <div
-                  key={participant.name}
+                  key={participant.id}
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -209,12 +209,12 @@ function Navigation({
                     </div>
                   </div>
                   
-                  {participant.name !== currentUser.name && (
+                  {participant.id !== currentUser.id && (
                     <button
                       className="pixel-button"
                       onClick={() => {
                         if (window.confirm(`Are you sure you want to remove ${participant.name}? This will delete all their data and cannot be undone.`)) {
-                          removeUser(participant.name)
+                          removeUser(participant.id)
                           setShowUserModal(false)
                         }
                       }}
@@ -226,7 +226,7 @@ function Navigation({
                     </button>
                   )}
                   
-                  {participant.name === currentUser.name && (
+                  {participant.id === currentUser.id && (
                     <span style={{ fontSize: '12px', color: 'var(--dark-color)', fontStyle: 'italic' }}>
                       Current user
                     </span>

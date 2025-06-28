@@ -30,6 +30,7 @@ function ExpenseTracker({ participants, currentUser }) {
         ...newExpense,
         amount: parseFloat(newExpense.amount),
         date: new Date().toISOString(),
+        createdById: currentUser.id,
         createdBy: currentUser.name
       }
       saveExpenses([...expenses, expense])
@@ -44,7 +45,7 @@ function ExpenseTracker({ participants, currentUser }) {
 
   const deleteExpense = (expenseId) => {
     const expense = expenses.find(e => e.id === expenseId)
-    const canDelete = currentUser.isAdmin || expense.createdBy === currentUser.name
+    const canDelete = currentUser.isAdmin || expense.createdById === currentUser.id
     
     if (canDelete && window.confirm('Are you sure you want to delete this expense?')) {
       saveExpenses(expenses.filter(expense => expense.id !== expenseId))
@@ -212,7 +213,7 @@ function ExpenseTracker({ participants, currentUser }) {
                       Added by: {expense.createdBy}
                     </p>
                   </div>
-                  {(currentUser.isAdmin || expense.createdBy === currentUser.name) && (
+                  {(currentUser.isAdmin || expense.createdById === currentUser.id) && (
                     <button
                       className="pixel-button"
                       onClick={() => deleteExpense(expense.id)}
