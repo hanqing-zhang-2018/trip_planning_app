@@ -14,7 +14,7 @@ const avatars = [
 // You can change these invite codes to whatever you want
 const INVITE_CODES = {
   'HANQINGNB2025': { tripGroup: 'Trip 1', description: 'July 18-20 Trip' },
-  'HANQING2NDNB2025': { tripGroup: 'Trip 2', description: 'July 4th Trip' }
+  'JULY4TH2025': { tripGroup: 'Trip 2', description: 'July 4th Trip' }
 }
 
 // Admin codes linked to specific admin identities and trip groups
@@ -161,10 +161,7 @@ function LandingPage({ onLogin, participants }) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            🎉 Welcome to {currentTripGroup}!
-            <div style={{ fontSize: '0.8rem', marginTop: '4px', opacity: 0.9 }}>
-              {INVITE_CODES[inviteCode.trim().toUpperCase()]?.description || 'Trip Group'}
-            </div>
+            🎉 Welcome to {INVITE_CODES[inviteCode.trim().toUpperCase()]?.description || 'Trip'}!
           </div>
         )}
         
