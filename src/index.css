@@ -18,15 +18,22 @@
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --border-radius: 8px;
   
-  /* Typography */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-display: 'Press Start 2P', cursive;
+  /* Typography with Chinese support */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', 'Helvetica Neue', Arial, sans-serif;
+  --font-family-display: 'Press Start 2P', 'Courier New', 'Microsoft YaHei', '微软雅黑', monospace;
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* General Chinese text optimization */
+p, span, div, h1, h2, h3, h4, h5, h6, label, input, textarea, button, select {
+  font-family: var(--font-family);
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "liga" 1, "kern" 1;
 }
 
 body {
@@ -42,6 +49,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
   /* Prevent zoom on input focus for iOS */
   touch-action: manipulation;
+  /* Chinese text optimization */
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "liga" 1, "kern" 1;
 }
 
 .app {
@@ -131,6 +141,13 @@ body {
   gap: 8px;
   box-shadow: var(--shadow);
   letter-spacing: 0.025em;
+  /* Chinese text optimization */
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "liga" 1, "kern" 1;
+  /* Ensure proper text wrapping for Chinese */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pixel-button:hover {
@@ -154,6 +171,9 @@ body {
   width: 100%;
   box-shadow: var(--shadow);
   transition: all 0.2s ease;
+  /* Chinese text optimization */
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "liga" 1, "kern" 1;
 }
 
 .pixel-input:focus {
@@ -165,6 +185,8 @@ body {
 .pixel-input::placeholder {
   color: #6b7280;
   font-weight: 400;
+  /* Ensure placeholder text renders well */
+  font-family: var(--font-family);
 }
 
 /* Vote buttons with better contrast */
@@ -447,11 +469,17 @@ body {
   .pixel-button {
     padding: 10px 20px;
     font-size: 0.95rem;
+    /* Ensure Chinese text doesn't break on mobile */
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
   
   .pixel-input {
     padding: 10px 14px;
     font-size: 0.95rem;
+    /* Better Chinese input on mobile */
+    -webkit-appearance: none;
+    border-radius: var(--border-radius);
   }
   
   /* Compact navigation for mobile */
@@ -472,6 +500,10 @@ body {
   .nav-item {
     padding: 4px 8px;
     font-size: 0.6rem;
+    /* Ensure Chinese text fits in nav items */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .nav-bar .pixel-button {
