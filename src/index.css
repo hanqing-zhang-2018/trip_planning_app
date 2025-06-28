@@ -415,6 +415,10 @@ body {
 
 /* Mobile optimizations */
 @media (max-width: 768px) {
+  #root {
+    padding: 1rem;
+  }
+  
   .container {
     padding: 16px;
   }
@@ -428,7 +432,7 @@ body {
   }
   
   .nav-bar {
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
   }
   
   .nav-links {
@@ -448,6 +452,431 @@ body {
   .pixel-input {
     padding: 10px 14px;
     font-size: 0.95rem;
+  }
+}
+
+/* iOS-specific optimizations */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+  #root {
+    padding: 0.5rem;
+  }
+  
+  .nav-bar {
+    padding: 0.2rem 0.4rem;
+    border-bottom-width: 2px;
+  }
+  
+  .nav-bar .container {
+    padding: 0;
+  }
+  
+  /* Make the welcome section more compact */
+  .nav-bar .pixel-subtitle {
+    font-size: 0.55rem;
+    margin: 0;
+    line-height: 1.2;
+  }
+  
+  /* Reduce trip title size on mobile */
+  .nav-bar .pixel-title {
+    font-size: 1rem;
+    margin: 6px 0;
+    line-height: 1.2;
+  }
+  
+  /* Make navigation items smaller and more compact */
+  .nav-list {
+    margin-top: 0.4rem;
+    gap: 0.2rem;
+  }
+  
+  .nav-item {
+    padding: 3px 6px;
+    font-size: 0.55rem;
+    border-width: 1px;
+    line-height: 1.2;
+  }
+  
+  /* Reduce admin button sizes */
+  .nav-bar .pixel-button {
+    padding: 3px 6px;
+    font-size: 0.55rem;
+    min-height: auto;
+  }
+  
+  /* Make logout button more compact */
+  .nav-bar .pixel-button:last-child {
+    padding: 4px 8px;
+    font-size: 0.6rem;
+  }
+  
+  /* Reduce avatar size in navigation */
+  .nav-bar span[style*="font-size: 24px"] {
+    font-size: 16px !important;
+  }
+  
+  /* Make the main content area have more space */
+  .app {
+    padding-top: 0;
+  }
+  
+  /* Reduce margins in cards for more content visibility */
+  .pixel-card {
+    margin: 0.4rem 0;
+    padding: 0.6rem;
+  }
+  
+  /* Make expense and Airbnb items more compact */
+  .expense-item, .airbnb-card {
+    padding: 0.6rem;
+    margin: 0.4rem 0;
+  }
+  
+  /* Reduce form padding */
+  .pixel-input {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+  
+  /* Make buttons more compact */
+  .pixel-button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  /* Reduce gap between elements in navigation */
+  .nav-bar .container > div {
+    gap: 8px !important;
+  }
+  
+  /* Make the welcome text more compact */
+  .nav-bar .container > div > div:first-child {
+    gap: 8px !important;
+  }
+  
+  /* Reduce admin buttons gap */
+  .nav-bar .container > div > div:last-child {
+    gap: 4px !important;
+  }
+  
+  /* Make the trip title editing more compact */
+  .nav-bar .container > div:nth-child(2) {
+    margin-bottom: 8px;
+  }
+  
+  /* Reduce spacing in the title editing section */
+  .nav-bar .container > div:nth-child(2) > div {
+    gap: 4px !important;
+  }
+  
+  /* Make title input smaller */
+  .nav-bar .pixel-input {
+    font-size: 0.9rem;
+    padding: 4px 8px;
+  }
+  
+  /* Make title editing buttons smaller */
+  .nav-bar .pixel-button[style*="padding: 4px 8px"] {
+    padding: 3px 6px !important;
+    font-size: 0.5rem !important;
+  }
+}
+
+/* Android-specific optimizations */
+@media (max-width: 768px) and (min-resolution: 2dppx) {
+  #root {
+    padding: 0.5rem;
+  }
+  
+  .nav-bar {
+    padding: 0.2rem 0.4rem;
+    border-bottom-width: 2px;
+  }
+  
+  .nav-bar .container {
+    padding: 0;
+  }
+  
+  /* Make the welcome section more compact */
+  .nav-bar .pixel-subtitle {
+    font-size: 0.55rem;
+    margin: 0;
+    line-height: 1.2;
+  }
+  
+  /* Reduce trip title size on mobile */
+  .nav-bar .pixel-title {
+    font-size: 1rem;
+    margin: 6px 0;
+    line-height: 1.2;
+  }
+  
+  /* Make navigation items smaller and more compact */
+  .nav-list {
+    margin-top: 0.4rem;
+    gap: 0.2rem;
+  }
+  
+  .nav-item {
+    padding: 3px 6px;
+    font-size: 0.55rem;
+    border-width: 1px;
+    line-height: 1.2;
+  }
+  
+  /* Reduce admin button sizes */
+  .nav-bar .pixel-button {
+    padding: 3px 6px;
+    font-size: 0.55rem;
+    min-height: auto;
+  }
+  
+  /* Make logout button more compact */
+  .nav-bar .pixel-button:last-child {
+    padding: 4px 8px;
+    font-size: 0.6rem;
+  }
+  
+  /* Reduce avatar size in navigation */
+  .nav-bar span[style*="font-size: 24px"] {
+    font-size: 16px !important;
+  }
+  
+  /* Make the main content area have more space */
+  .app {
+    padding-top: 0;
+  }
+  
+  /* Reduce margins in cards for more content visibility */
+  .pixel-card {
+    margin: 0.4rem 0;
+    padding: 0.6rem;
+  }
+  
+  /* Make expense and Airbnb items more compact */
+  .expense-item, .airbnb-card {
+    padding: 0.6rem;
+    margin: 0.4rem 0;
+  }
+  
+  /* Reduce form padding */
+  .pixel-input {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+  
+  /* Make buttons more compact */
+  .pixel-button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  /* Reduce gap between elements in navigation */
+  .nav-bar .container > div {
+    gap: 8px !important;
+  }
+  
+  /* Make the welcome text more compact */
+  .nav-bar .container > div > div:first-child {
+    gap: 8px !important;
+  }
+  
+  /* Reduce admin buttons gap */
+  .nav-bar .container > div > div:last-child {
+    gap: 4px !important;
+  }
+  
+  /* Make the trip title editing more compact */
+  .nav-bar .container > div:nth-child(2) {
+    margin-bottom: 8px;
+  }
+  
+  /* Reduce spacing in the title editing section */
+  .nav-bar .container > div:nth-child(2) > div {
+    gap: 4px !important;
+  }
+  
+  /* Make title input smaller */
+  .nav-bar .pixel-input {
+    font-size: 0.9rem;
+    padding: 4px 8px;
+  }
+  
+  /* Make title editing buttons smaller */
+  .nav-bar .pixel-button[style*="padding: 4px 8px"] {
+    padding: 3px 6px !important;
+    font-size: 0.5rem !important;
+  }
+}
+
+/* Additional Android support for older devices */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 1.5) {
+  #root {
+    padding: 0.5rem;
+  }
+  
+  .nav-bar {
+    padding: 0.2rem 0.4rem;
+    border-bottom-width: 2px;
+  }
+  
+  .nav-bar .container {
+    padding: 0;
+  }
+  
+  .nav-bar .pixel-subtitle {
+    font-size: 0.55rem;
+    margin: 0;
+    line-height: 1.2;
+  }
+  
+  .nav-bar .pixel-title {
+    font-size: 1rem;
+    margin: 6px 0;
+    line-height: 1.2;
+  }
+  
+  .nav-list {
+    margin-top: 0.4rem;
+    gap: 0.2rem;
+  }
+  
+  .nav-item {
+    padding: 3px 6px;
+    font-size: 0.55rem;
+    border-width: 1px;
+    line-height: 1.2;
+  }
+  
+  .nav-bar .pixel-button {
+    padding: 3px 6px;
+    font-size: 0.55rem;
+    min-height: auto;
+  }
+  
+  .nav-bar .pixel-button:last-child {
+    padding: 4px 8px;
+    font-size: 0.6rem;
+  }
+  
+  .nav-bar span[style*="font-size: 24px"] {
+    font-size: 16px !important;
+  }
+  
+  .app {
+    padding-top: 0;
+  }
+  
+  .pixel-card {
+    margin: 0.4rem 0;
+    padding: 0.6rem;
+  }
+  
+  .expense-item, .airbnb-card {
+    padding: 0.6rem;
+    margin: 0.4rem 0;
+  }
+  
+  .pixel-input {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+  
+  .pixel-button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .nav-bar .container > div {
+    gap: 8px !important;
+  }
+  
+  .nav-bar .container > div > div:first-child {
+    gap: 8px !important;
+  }
+  
+  .nav-bar .container > div > div:last-child {
+    gap: 4px !important;
+  }
+  
+  .nav-bar .container > div:nth-child(2) {
+    margin-bottom: 8px;
+  }
+  
+  .nav-bar .container > div:nth-child(2) > div {
+    gap: 4px !important;
+  }
+  
+  .nav-bar .pixel-input {
+    font-size: 0.9rem;
+    padding: 4px 8px;
+  }
+  
+  .nav-bar .pixel-button[style*="padding: 4px 8px"] {
+    padding: 3px 6px !important;
+    font-size: 0.5rem !important;
+  }
+}
+
+/* Extra small screens (iPhone SE, etc.) */
+@media (max-width: 375px) {
+  #root {
+    padding: 0.3rem;
+  }
+  
+  .nav-bar {
+    padding: 0.15rem 0.3rem;
+  }
+  
+  .nav-bar .pixel-title {
+    font-size: 0.9rem;
+    margin: 4px 0;
+  }
+  
+  .nav-item {
+    padding: 2px 4px;
+    font-size: 0.5rem;
+  }
+  
+  .nav-bar .pixel-button {
+    padding: 2px 4px;
+    font-size: 0.5rem;
+  }
+  
+  .nav-bar .pixel-subtitle {
+    font-size: 0.5rem;
+  }
+  
+  .nav-bar span[style*="font-size: 24px"] {
+    font-size: 14px !important;
+  }
+  
+  /* Even more compact spacing */
+  .nav-bar .container > div {
+    gap: 6px !important;
+  }
+  
+  .nav-bar .container > div > div:first-child {
+    gap: 6px !important;
+  }
+  
+  .nav-bar .container > div > div:last-child {
+    gap: 3px !important;
+  }
+  
+  .nav-list {
+    margin-top: 0.3rem;
+    gap: 0.15rem;
+  }
+  
+  .pixel-card {
+    margin: 0.3rem 0;
+    padding: 0.5rem;
+  }
+  
+  .expense-item, .airbnb-card {
+    padding: 0.5rem;
+    margin: 0.3rem 0;
   }
 }
 
