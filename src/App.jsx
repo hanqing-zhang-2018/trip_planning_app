@@ -14,7 +14,7 @@ function App() {
   
   const [currentUser, setCurrentUser] = useState(null)
   const [participants, setParticipants] = useState([])
-  const [tripTitle, setTripTitle] = useState('Trip Pixel App')
+  const [tripTitle, setTripTitle] = useState('Trip Planning')
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [newTitle, setNewTitle] = useState('')
 
@@ -71,6 +71,22 @@ function App() {
     
     setCurrentUser(userWithTripGroup)
     localStorage.setItem('tripUser', JSON.stringify(userWithTripGroup))
+    
+    // Set the correct trip title based on trip group
+    const tripGroup = userWithTripGroup.tripGroup
+    const savedTitle = localStorage.getItem(`tripTitle_${tripGroup}`)
+    if (savedTitle) {
+      setTripTitle(savedTitle)
+    } else {
+      // Set default trip title based on trip group
+      if (tripGroup === 'Trip 1') {
+        setTripTitle('July 18-20 Trip')
+        localStorage.setItem(`tripTitle_${tripGroup}`, 'July 18-20 Trip')
+      } else if (tripGroup === 'Trip 2') {
+        setTripTitle('July 4th Trip')
+        localStorage.setItem(`tripTitle_${tripGroup}`, 'July 4th Trip')
+      }
+    }
     
     // Add user to participants if not already there
     if (!participants.find(p => p.name === user.name && p.tripGroup === userWithTripGroup.tripGroup)) {
@@ -142,7 +158,7 @@ function App() {
       
       // Reset state
       setParticipants([])
-      setTripTitle('Trip Pixel App')
+      setTripTitle('Trip Planning')
       setCurrentUser(null)
     }
   }
