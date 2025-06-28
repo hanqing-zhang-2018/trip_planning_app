@@ -13,8 +13,8 @@ const avatars = [
 
 // You can change these invite codes to whatever you want
 const INVITE_CODES = {
-  'HANQINGNB2025': { tripGroup: 'Trip 1', description: 'First Trip Group' },
-  'HANQING2NDNB2025': { tripGroup: 'Trip 2', description: 'Second Trip Group' }
+  'HANQINGNB2025': { tripGroup: 'Trip 1', description: 'July 18-20 Trip' },
+  'HANQING2NDNB2025': { tripGroup: 'Trip 2', description: 'July 4th Trip' }
 }
 
 // Admin codes linked to specific admin identities and trip groups
@@ -24,21 +24,21 @@ const ADMIN_CODES = {
     avatar: '👑', 
     isAdmin: true, 
     tripGroup: 'Trip 1',
-    description: 'First Trip Group'
+    description: 'July 18-20 Trip'
   },
   'HANQING2ND2025': { 
     name: 'Hanqi', 
     avatar: '👑', 
     isAdmin: true, 
     tripGroup: 'Trip 2',
-    description: 'Second Trip Group'
+    description: 'July 4th Trip'
   },
   'EMI2025': { 
     name: 'Emily', 
     avatar: '🐶', 
     isAdmin: true, 
     tripGroup: 'Trip 1',
-    description: 'First Trip Group'
+    description: 'July 18-20 Trip'
   },
 //   'MONA2025': { name: 'Mona', avatar: '🌸', isAdmin: true },
   // Add more admin codes as needed
