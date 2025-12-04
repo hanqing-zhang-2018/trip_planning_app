@@ -10,16 +10,24 @@ function ActivitiesWishlist({ participants, currentUser }) {
   const [newActivityLink, setNewActivityLink] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
 
+  // Helper function to get trip-group-specific storage key
+  const getStorageKey = (baseKey) => {
+    const tripGroup = currentUser?.tripGroup || 'default'
+    return `${baseKey}_${tripGroup}`
+  }
+
   useEffect(() => {
-    const savedActivities = localStorage.getItem('tripActivities')
+    const storageKey = getStorageKey('tripActivities')
+    const savedActivities = localStorage.getItem(storageKey)
     if (savedActivities) {
       setActivities(JSON.parse(savedActivities))
     }
-  }, [])
+  }, [currentUser?.tripGroup])
 
   const saveActivities = (updatedActivities) => {
     setActivities(updatedActivities)
-    localStorage.setItem('tripActivities', JSON.stringify(updatedActivities))
+    const storageKey = getStorageKey('tripActivities')
+    localStorage.setItem(storageKey, JSON.stringify(updatedActivities))
   }
 
   const addActivity = (e) => {

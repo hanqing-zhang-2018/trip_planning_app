@@ -37,7 +37,7 @@ const defaultDareChallenges = [
   "Let someone in the group give you a new nickname for the rest of the trip"
 ]
 
-function TruthOrDare() {
+function TruthOrDare({ currentUser }) {
   const [currentQuestion, setCurrentQuestion] = useState('')
   const [questionType, setQuestionType] = useState('')
   const [showQuestion, setShowQuestion] = useState(false)
@@ -47,9 +47,17 @@ function TruthOrDare() {
   const [newCustomQuestion, setNewCustomQuestion] = useState('')
   const [newCustomType, setNewCustomType] = useState('truth')
 
+  // Helper function to get trip-group-specific storage key
+  const getStorageKey = (baseKey) => {
+    const tripGroup = currentUser?.tripGroup || 'default'
+    return `${baseKey}_${tripGroup}`
+  }
+
   useEffect(() => {
-    const savedCustomTruth = localStorage.getItem('tripCustomTruth')
-    const savedCustomDare = localStorage.getItem('tripCustomDare')
+    const truthKey = getStorageKey('tripCustomTruth')
+    const dareKey = getStorageKey('tripCustomDare')
+    const savedCustomTruth = localStorage.getItem(truthKey)
+    const savedCustomDare = localStorage.getItem(dareKey)
     
     if (savedCustomTruth) {
       setCustomTruthQuestions(JSON.parse(savedCustomTruth))
@@ -57,15 +65,17 @@ function TruthOrDare() {
     if (savedCustomDare) {
       setCustomDareChallenges(JSON.parse(savedCustomDare))
     }
-  }, [])
+  }, [currentUser?.tripGroup])
 
   const saveCustomQuestions = (type, questions) => {
     if (type === 'truth') {
       setCustomTruthQuestions(questions)
-      localStorage.setItem('tripCustomTruth', JSON.stringify(questions))
+      const storageKey = getStorageKey('tripCustomTruth')
+      localStorage.setItem(storageKey, JSON.stringify(questions))
     } else {
       setCustomDareChallenges(questions)
-      localStorage.setItem('tripCustomDare', JSON.stringify(questions))
+      const storageKey = getStorageKey('tripCustomDare')
+      localStorage.setItem(storageKey, JSON.stringify(questions))
     }
   }
 

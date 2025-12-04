@@ -14,16 +14,24 @@ function AirbnbVoting({ participants, currentUser }) {
   const [newGuests, setNewGuests] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
 
+  // Helper function to get trip-group-specific storage key
+  const getStorageKey = (baseKey) => {
+    const tripGroup = currentUser?.tripGroup || 'default'
+    return `${baseKey}_${tripGroup}`
+  }
+
   useEffect(() => {
-    const savedAirbnbs = localStorage.getItem('tripAirbnbs')
+    const storageKey = getStorageKey('tripAirbnbs')
+    const savedAirbnbs = localStorage.getItem(storageKey)
     if (savedAirbnbs) {
       setAirbnbs(JSON.parse(savedAirbnbs))
     }
-  }, [])
+  }, [currentUser?.tripGroup])
 
   const saveAirbnbs = (updatedAirbnbs) => {
     setAirbnbs(updatedAirbnbs)
-    localStorage.setItem('tripAirbnbs', JSON.stringify(updatedAirbnbs))
+    const storageKey = getStorageKey('tripAirbnbs')
+    localStorage.setItem(storageKey, JSON.stringify(updatedAirbnbs))
   }
 
   const addAirbnb = (e) => {
@@ -344,7 +352,7 @@ function AirbnbCard({ airbnb, participants, onVote, onDelete, currentUser }) {
         <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
           <button
             className="vote-btn like"
-            onClick={() => onVote(airbnb.id, 'like', 'Current User')}
+            onClick={() => onVote(airbnb.id, 'like', currentUser.name)}
             title="Vote like"
             style={{ padding: '8px 12px', fontSize: '14px' }}
           >
@@ -352,7 +360,7 @@ function AirbnbCard({ airbnb, participants, onVote, onDelete, currentUser }) {
           </button>
           <button
             className="vote-btn dislike"
-            onClick={() => onVote(airbnb.id, 'dislike', 'Current User')}
+            onClick={() => onVote(airbnb.id, 'dislike', currentUser.name)}
             title="Vote dislike"
             style={{ padding: '8px 12px', fontSize: '14px' }}
           >

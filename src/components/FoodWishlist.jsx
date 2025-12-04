@@ -11,16 +11,24 @@ function FoodWishlist({ participants, currentUser }) {
   const [editingComment, setEditingComment] = useState(null)
   const [commentText, setCommentText] = useState('')
 
+  // Helper function to get trip-group-specific storage key
+  const getStorageKey = (baseKey) => {
+    const tripGroup = currentUser?.tripGroup || 'default'
+    return `${baseKey}_${tripGroup}`
+  }
+
   useEffect(() => {
-    const savedWishlist = localStorage.getItem('tripFoodWishlist')
+    const storageKey = getStorageKey('tripFoodWishlist')
+    const savedWishlist = localStorage.getItem(storageKey)
     if (savedWishlist) {
       setWishlistItems(JSON.parse(savedWishlist))
     }
-  }, [])
+  }, [currentUser?.tripGroup])
 
   const saveWishlist = (updatedWishlist) => {
     setWishlistItems(updatedWishlist)
-    localStorage.setItem('tripFoodWishlist', JSON.stringify(updatedWishlist))
+    const storageKey = getStorageKey('tripFoodWishlist')
+    localStorage.setItem(storageKey, JSON.stringify(updatedWishlist))
   }
 
   const addWishlistItem = (e) => {

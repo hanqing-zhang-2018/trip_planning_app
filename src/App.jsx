@@ -41,11 +41,10 @@ function App() {
         setTripTitle(savedTitle)
       } else {
         // Set default trip title based on trip group
-        if (tripGroup === 'Trip 1') {
-          setTripTitle('July 18-20 Trip')
-        } else if (tripGroup === 'Trip 2') {
-          setTripTitle('July 4th Trip')
+        if (tripGroup === 'Hawaii Xmas 2025') {
+          setTripTitle('Hawaii Xmas 2025')
         }
+        // Add more default titles here as needed
       }
     } else {
       // Load participants from localStorage (legacy support)
@@ -79,13 +78,11 @@ function App() {
       setTripTitle(savedTitle)
     } else {
       // Set default trip title based on trip group
-      if (tripGroup === 'Trip 1') {
-        setTripTitle('July 18-20 Trip')
-        localStorage.setItem(`tripTitle_${tripGroup}`, 'July 18-20 Trip')
-      } else if (tripGroup === 'Trip 2') {
-        setTripTitle('July 4th Trip')
-        localStorage.setItem(`tripTitle_${tripGroup}`, 'July 4th Trip')
+      if (tripGroup === 'Hawaii Xmas 2025') {
+        setTripTitle('Hawaii Xmas 2025')
+        localStorage.setItem(`tripTitle_${tripGroup}`, 'Hawaii Xmas 2025')
       }
+      // Add more default titles here as needed
     }
     
     // Add user to participants if not already there
@@ -207,7 +204,7 @@ function App() {
             <Route path="/" element={<Navigate to="/airbnb" replace />} />
             <Route path="/airbnb" element={<AirbnbVoting participants={participants} currentUser={currentUser} />} />
             <Route path="/expenses" element={<ExpenseTracker participants={participants} currentUser={currentUser} />} />
-            <Route path="/truth-dare" element={<TruthOrDare />} />
+            <Route path="/truth-dare" element={<TruthOrDare currentUser={currentUser} />} />
             <Route path="/food" element={<FoodWishlist participants={participants} currentUser={currentUser} />} />
             <Route path="/activities" element={<ActivitiesWishlist participants={participants} currentUser={currentUser} />} />
           </Routes>

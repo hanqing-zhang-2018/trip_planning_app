@@ -10,16 +10,24 @@ function ExpenseTracker({ participants, currentUser }) {
     splitBetween: []
   })
 
+  // Helper function to get trip-group-specific storage key
+  const getStorageKey = (baseKey) => {
+    const tripGroup = currentUser?.tripGroup || 'default'
+    return `${baseKey}_${tripGroup}`
+  }
+
   useEffect(() => {
-    const savedExpenses = localStorage.getItem('tripExpenses')
+    const storageKey = getStorageKey('tripExpenses')
+    const savedExpenses = localStorage.getItem(storageKey)
     if (savedExpenses) {
       setExpenses(JSON.parse(savedExpenses))
     }
-  }, [])
+  }, [currentUser?.tripGroup])
 
   const saveExpenses = (updatedExpenses) => {
     setExpenses(updatedExpenses)
-    localStorage.setItem('tripExpenses', JSON.stringify(updatedExpenses))
+    const storageKey = getStorageKey('tripExpenses')
+    localStorage.setItem(storageKey, JSON.stringify(updatedExpenses))
   }
 
   const addExpense = (e) => {

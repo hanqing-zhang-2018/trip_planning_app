@@ -12,32 +12,26 @@ const avatars = [
 ]
 
 // You can change these invite codes to whatever you want
+// To add a new trip, add a new entry here with a unique invite code
 const INVITE_CODES = {
-  'HANQINGNB2025': { tripGroup: 'Trip 1', description: 'July 18-20 Trip' },
-  'JULY4TH2025': { tripGroup: 'Trip 2', description: 'July 4th Trip' }
+  'HAWAIIXMAS2025': { tripGroup: 'Hawaii Xmas 2025', description: 'Hawaii Xmas 2025' }
+  // Add more trips here:
+  // 'NEWTRIPCODE': { tripGroup: 'Trip Name', description: 'Trip Description' },
 }
 
 // Admin codes linked to specific admin identities and trip groups
+// To add a new admin, add a new entry here with a unique admin code
 const ADMIN_CODES = {
-  'JULY18ADM': { 
-    id: 'admin_trip1',
+  'HAWAIIXMASADM': { 
+    id: 'admin_hawaii_xmas',
     name: 'Emily', 
     avatar: '🐶', 
     isAdmin: true, 
-    tripGroup: 'Trip 1',
-    description: 'July 18-20 Trip'
-  },
-  'JULY4ADM': { 
-    id: 'admin_trip2',
-    name: 'Emily', 
-    avatar: '🐶', 
-    isAdmin: true, 
-    tripGroup: 'Trip 2',
-    description: 'July 4th Trip'
+    tripGroup: 'Hawaii Xmas 2025',
+    description: 'Hawaii Xmas 2025'
   }
-//   'MONA2025': { name: 'Mona', avatar: '🌸', isAdmin: true },
-  // Add more admin codes as needed
-  // 'CODE2025': { id: 'unique_id', name: 'AdminName', avatar: '🎯', isAdmin: true, tripGroup: 'Trip X', description: 'Trip Description' },
+  // Add more admin codes as needed:
+  // 'NEWADMINCODE': { id: 'unique_id', name: 'AdminName', avatar: '🎯', isAdmin: true, tripGroup: 'Trip Name', description: 'Trip Description' },
 }
 
 function LandingPage({ onLogin, participants }) {
