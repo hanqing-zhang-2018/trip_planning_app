@@ -21,7 +21,27 @@ This app now uses **Firebase Firestore** for real-time data synchronization acro
    - `storageBucket`
    - `messagingSenderId`
    - `appId`
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAQLtYDXsr9sF3ZjYbTZo1-503ALqR78Ro",
+  authDomain: "trip-pixel-app.firebaseapp.com",
+  projectId: "trip-pixel-app",
+  storageBucket: "trip-pixel-app.firebasestorage.app",
+  messagingSenderId: "449991817034",
+  appId: "1:449991817034:web:7d8b6bb3e9dfde3b1073b3",
+  measurementId: "G-RLRVPBTRDE"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 ## Step 3: Set Up Firestore Database
 
 1. In Firebase Console, go to **"Firestore Database"** in the left sidebar

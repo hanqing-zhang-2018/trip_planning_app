@@ -4,6 +4,7 @@
 
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
+import { checkFirebaseConfig } from './debug'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -32,12 +33,21 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
 let app
 let db
 
+// Check config on import (only in development)
+if (import.meta.env.DEV) {
+  checkFirebaseConfig()
+}
+
 try {
   app = initializeApp(firebaseConfig)
   db = getFirestore(app)
-  console.log('Firebase initialized successfully')
+  console.log('✅ Firebase initialized successfully')
 } catch (error) {
-  console.error('Error initializing Firebase:', error)
+  console.error('❌ Error initializing Firebase:', error)
+  console.error('Please check:')
+  console.error('1. .env file exists with all VITE_FIREBASE_* variables')
+  console.error('2. Dev server was restarted after creating .env')
+  console.error('3. Firestore database is created in Firebase Console')
   throw error
 }
 

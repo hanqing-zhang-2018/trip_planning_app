@@ -28,10 +28,21 @@ function FoodWishlist({ participants, currentUser }) {
         setWishlistItems(updatedItems || [])
         setLoading(false)
       }, (error) => {
-        console.error('Error loading food items:', error)
+        console.error('❌ Error loading food items:', error)
+        console.error('Error code:', error.code)
+        console.error('Error message:', error.message)
+        
+        // More specific error messages
+        if (error.code === 'permission-denied') {
+          alert('Permission denied! Please check Firestore security rules in Firebase Console.')
+        } else if (error.code === 'unavailable') {
+          alert('Firestore is unavailable. Please check your internet connection and Firebase project status.')
+        } else {
+          alert(`Failed to load food items: ${error.message}\n\nCheck browser console for details.`)
+        }
+        
         setWishlistItems([])
         setLoading(false)
-        alert('Failed to load food items. Please check your Firebase configuration.')
       })
 
       return () => unsubscribe()
