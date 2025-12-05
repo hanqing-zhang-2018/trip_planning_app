@@ -209,12 +209,12 @@ function Navigation({
                     </div>
                   </div>
                   
-                  {participant.id !== currentUser.id && (
+                  {(participant.id !== currentUser.id && participant.userId !== currentUser.id) && (
                     <button
                       className="pixel-button"
                       onClick={() => {
                         if (window.confirm(`Are you sure you want to remove ${participant.name}? This will delete all their data and cannot be undone.`)) {
-                          removeUser(participant.id)
+                          removeUser(participant.id) // Use Firestore doc ID
                           setShowUserModal(false)
                         }
                       }}
@@ -226,7 +226,7 @@ function Navigation({
                     </button>
                   )}
                   
-                  {participant.id === currentUser.id && (
+                  {(participant.id === currentUser.id || participant.userId === currentUser.id) && (
                     <span style={{ fontSize: '12px', color: 'var(--dark-color)', fontStyle: 'italic' }}>
                       Current user
                     </span>

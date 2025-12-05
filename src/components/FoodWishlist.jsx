@@ -105,14 +105,30 @@ function FoodWishlist({ participants, currentUser }) {
 
   const deleteItem = async (itemId) => {
     const item = wishlistItems.find(i => i.id === itemId)
-    const canDelete = currentUser.isAdmin || item?.createdById === currentUser.id
+    if (!item) {
+      console.error('Item not found:', itemId)
+      return
+    }
     
-    if (canDelete && window.confirm('Are you sure you want to delete this item?')) {
+    const canDelete = currentUser.isAdmin || item.createdById === currentUser.id
+    
+    if (!canDelete) {
+      alert('You do not have permission to delete this item.')
+      console.log('Delete permission check:', {
+        isAdmin: currentUser.isAdmin,
+        itemCreatedById: item.createdById,
+        currentUserId: currentUser.id,
+        canDelete: false
+      })
+      return
+    }
+    
+    if (window.confirm('Are you sure you want to delete this item?')) {
       try {
         await foodWishlistService.delete(tripGroup, itemId)
       } catch (error) {
         console.error('Error deleting item:', error)
-        alert('Failed to delete item. Please try again.')
+        alert(`Failed to delete item: ${error.message}`)
       }
     }
   }
@@ -451,7 +467,7 @@ function WishlistItem({ item, participants, onToggleStatus, onDelete, editingCom
       </div>
       
       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-        {currentUser.isAdmin || item.createdById === currentUser.id && (
+        {(currentUser.isAdmin || item.createdById === currentUser.id) && (
           <button
             className="pixel-button"
             onClick={() => onDelete(item.id)}

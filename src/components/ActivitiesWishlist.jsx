@@ -345,7 +345,7 @@ function ActivityItem({ activity, participants, onToggleStatus, onDelete, curren
           {activity.confirmed && '✓'}
         </button>
         
-        {currentUser.isAdmin || activity.createdById === currentUser.id && (
+        {(currentUser.isAdmin || activity.createdById === currentUser.id) && (
           <button
             className="pixel-button"
             onClick={() => onDelete(activity.id)}

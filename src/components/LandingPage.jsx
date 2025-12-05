@@ -80,8 +80,9 @@ function LandingPage({ onLogin, participants }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (name.trim() && selectedAvatar) {
-      // Generate a unique ID for this user
-      const userId = `${name.trim()}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      // For admin users, use the fixed ID from admin code to prevent duplicates
+      // For regular users, generate a unique ID
+      const userId = adminIdentity?.id || `${name.trim()}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       
       const userData = {
         id: userId,

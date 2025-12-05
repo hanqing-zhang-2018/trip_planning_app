@@ -90,19 +90,37 @@ function App() {
     
     // Add user to participants if not already there
     try {
-      const existingParticipant = participants.find(p => p.id === user.id && p.tripGroup === tripGroup)
+      // Find by original user ID (stored in document data as 'userId', not Firestore doc ID)
+      // Also check the 'id' field in case it's the original user ID (for backward compatibility)
+      const existingParticipant = participants.find(p => 
+        (p.userId && p.userId === user.id) || 
+        (p.id === user.id && !p.userId) // Backward compatibility: if no userId field, check id
+      )
+      
       if (!existingParticipant) {
-        await participantsService.add(tripGroup, userWithTripGroup)
+        // Store original user ID in the document for reference
+        const participantData = {
+          ...userWithTripGroup,
+          userId: user.id, // Store original ID for matching
+          // Keep the original id field for backward compatibility
+          originalId: user.id
+        }
+        const docId = await participantsService.add(tripGroup, participantData)
+        console.log('New participant added:', user.name, 'with Firestore ID:', docId)
       } else {
-        // Update existing user's avatar and admin status
-        await participantsService.update(tripGroup, user.id, {
+        // Update existing user's avatar and admin status using Firestore doc ID
+        console.log('Updating existing participant:', existingParticipant.name, 'Firestore ID:', existingParticipant.id)
+        await participantsService.update(tripGroup, existingParticipant.id, {
           avatar: user.avatar,
           isAdmin: user.isAdmin,
-          name: user.name
+          name: user.name,
+          userId: user.id, // Keep original ID reference
+          tripGroup: tripGroup // Ensure trip group is set
         })
       }
     } catch (error) {
       console.error('Error adding/updating participant:', error)
+      alert(`Failed to add/update participant: ${error.message}`)
     }
   }
 
@@ -113,16 +131,46 @@ function App() {
 
 
   const removeUser = async (userId) => {
+    // Check if current user is admin
+    if (!currentUser.isAdmin) {
+      alert('Only admins can remove users.')
+      return
+    }
+    
+    // userId is the Firestore document ID passed from Navigation component
     const userToRemove = participants.find(p => p.id === userId)
-    if (!userToRemove) return
+    if (!userToRemove) {
+      console.error('User not found:', userId)
+      console.error('Available participants:', participants.map(p => ({ 
+        firestoreId: p.id, 
+        userId: p.userId, 
+        name: p.name,
+        isAdmin: p.isAdmin 
+      })))
+      alert('User not found.')
+      return
+    }
+    
+    // Prevent admin from removing themselves
+    // Find current user's Firestore document ID by matching original userId
+    const currentUserFirestoreDoc = participants.find(p => {
+      const participantUserId = p.userId || (p.id && !p.userId ? p.id : null)
+      return participantUserId === currentUser.id
+    })
+    
+    if (userToRemove.id === currentUserFirestoreDoc?.id) {
+      alert('You cannot remove yourself.')
+      return
+    }
     
     if (window.confirm(`Are you sure you want to remove ${userToRemove.name} and all their data?`)) {
       try {
-        await participantsService.delete(currentUser.tripGroup, userId)
-        // Note: User's data in other collections will remain but can be cleaned up by admin if needed
+        // Use Firestore document ID for deletion
+        await participantsService.delete(currentUser.tripGroup, userToRemove.id)
+        console.log('✅ User removed successfully:', userToRemove.name)
       } catch (error) {
-        console.error('Error removing user:', error)
-        alert('Failed to remove user. Please try again.')
+        console.error('❌ Error removing user:', error)
+        alert(`Failed to remove user: ${error.message}`)
       }
     }
   }

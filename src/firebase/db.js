@@ -37,10 +37,15 @@ export const participantsService = {
       return onSnapshot(
         participantsRef, 
         (snapshot) => {
-          const participants = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }))
+          const participants = snapshot.docs.map(doc => {
+            const data = doc.data()
+            return {
+              id: doc.id, // Firestore document ID
+              ...data,
+              // Ensure userId is set (use original id if userId doesn't exist for backward compatibility)
+              userId: data.userId || data.id || doc.id
+            }
+          })
           callback(participants)
         },
         (error) => {
