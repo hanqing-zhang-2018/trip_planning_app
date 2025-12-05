@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { FiPlus, FiTrash2, FiShoppingCart, FiCoffee } from 'react-icons/fi'
+import { foodWishlistService } from '../firebase/db'
 
 function FoodWishlist({ participants, currentUser }) {
   const [wishlistItems, setWishlistItems] = useState([])
@@ -10,79 +11,84 @@ function FoodWishlist({ participants, currentUser }) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingComment, setEditingComment] = useState(null)
   const [commentText, setCommentText] = useState('')
+  const [loading, setLoading] = useState(true)
 
-  // Helper function to get trip-group-specific storage key
-  const getStorageKey = (baseKey) => {
-    const tripGroup = currentUser?.tripGroup || 'default'
-    return `${baseKey}_${tripGroup}`
-  }
+  const tripGroup = currentUser?.tripGroup || 'default'
 
+  // Real-time listener for food wishlist
   useEffect(() => {
-    const storageKey = getStorageKey('tripFoodWishlist')
-    const savedWishlist = localStorage.getItem(storageKey)
-    if (savedWishlist) {
-      setWishlistItems(JSON.parse(savedWishlist))
-    }
-  }, [currentUser?.tripGroup])
+    if (!currentUser?.tripGroup) return
 
-  const saveWishlist = (updatedWishlist) => {
-    setWishlistItems(updatedWishlist)
-    const storageKey = getStorageKey('tripFoodWishlist')
-    localStorage.setItem(storageKey, JSON.stringify(updatedWishlist))
-  }
+    setLoading(true)
+    const unsubscribe = foodWishlistService.subscribe(tripGroup, (updatedItems) => {
+      setWishlistItems(updatedItems)
+      setLoading(false)
+    })
 
-  const addWishlistItem = (e) => {
+    return () => unsubscribe()
+  }, [tripGroup, currentUser?.tripGroup])
+
+  const addWishlistItem = async (e) => {
     e.preventDefault()
     if (newItem.trim() && newItemAuthor) {
-      const wishlistItem = {
-        id: Date.now(),
-        text: newItem.trim(),
-        description: newItemDescription.trim(),
-        author: newItemAuthor,
-        type: newItemType, // 'grocery' or 'restaurant'
-        completed: false,
-        comment: '',
-        date: new Date().toISOString(),
-        createdById: currentUser.id,
-        createdBy: currentUser.name
+      try {
+        const wishlistItem = {
+          text: newItem.trim(),
+          description: newItemDescription.trim(),
+          author: newItemAuthor,
+          type: newItemType, // 'grocery' or 'restaurant'
+          completed: false,
+          comment: '',
+          date: new Date().toISOString(),
+          createdById: currentUser.id,
+          createdBy: currentUser.name
+        }
+        await foodWishlistService.add(tripGroup, wishlistItem)
+        setNewItem('')
+        setNewItemAuthor('')
+        setNewItemDescription('')
+        setNewItemType('grocery')
+        setShowAddForm(false)
+      } catch (error) {
+        console.error('Error adding food item:', error)
+        alert('Failed to add food item. Please try again.')
       }
-      saveWishlist([...wishlistItems, wishlistItem])
-      setNewItem('')
-      setNewItemAuthor('')
-      setNewItemDescription('')
-      setNewItemType('grocery')
-      setShowAddForm(false)
     }
   }
 
-  const toggleItemStatus = (itemId, field) => {
-    const updatedWishlist = wishlistItems.map(item => {
-      if (item.id === itemId) {
-        return { ...item, [field]: !item[field] }
-      }
-      return item
-    })
-    saveWishlist(updatedWishlist)
+  const toggleItemStatus = async (itemId, field) => {
+    try {
+      const item = wishlistItems.find(i => i.id === itemId)
+      if (!item) return
+      await foodWishlistService.update(tripGroup, itemId, { [field]: !item[field] })
+    } catch (error) {
+      console.error('Error updating item:', error)
+      alert('Failed to update item. Please try again.')
+    }
   }
 
-  const addComment = (itemId) => {
-    const updatedWishlist = wishlistItems.map(item => {
-      if (item.id === itemId) {
-        return { ...item, comment: commentText.trim() }
-      }
-      return item
-    })
-    saveWishlist(updatedWishlist)
-    setEditingComment(null)
-    setCommentText('')
+  const addComment = async (itemId) => {
+    try {
+      await foodWishlistService.update(tripGroup, itemId, { comment: commentText.trim() })
+      setEditingComment(null)
+      setCommentText('')
+    } catch (error) {
+      console.error('Error adding comment:', error)
+      alert('Failed to add comment. Please try again.')
+    }
   }
 
-  const deleteItem = (itemId) => {
+  const deleteItem = async (itemId) => {
     const item = wishlistItems.find(i => i.id === itemId)
-    const canDelete = currentUser.isAdmin || item.createdById === currentUser.id
+    const canDelete = currentUser.isAdmin || item?.createdById === currentUser.id
     
     if (canDelete && window.confirm('Are you sure you want to delete this item?')) {
-      saveWishlist(wishlistItems.filter(item => item.id !== itemId))
+      try {
+        await foodWishlistService.delete(tripGroup, itemId)
+      } catch (error) {
+        console.error('Error deleting item:', error)
+        alert('Failed to delete item. Please try again.')
+      }
     }
   }
 
@@ -90,6 +96,17 @@ function FoodWishlist({ participants, currentUser }) {
   const completedRestaurantItems = wishlistItems.filter(item => item.completed && item.type === 'restaurant')
   const groceryItems = wishlistItems.filter(item => !item.completed && item.type === 'grocery')
   const restaurantItems = wishlistItems.filter(item => !item.completed && item.type === 'restaurant')
+
+  if (loading) {
+    return (
+      <div>
+        <h1 className="pixel-title">🍕 Food Wishlist</h1>
+        <div className="pixel-card" style={{ textAlign: 'center' }}>
+          <p>Loading food items...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>

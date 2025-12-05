@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { FiPlus, FiTrash2, FiMapPin, FiCalendar } from 'react-icons/fi'
+import { activitiesService } from '../firebase/db'
 
 function ActivitiesWishlist({ participants, currentUser }) {
   const [activities, setActivities] = useState([])
@@ -9,75 +10,92 @@ function ActivitiesWishlist({ participants, currentUser }) {
   const [newActivityDate, setNewActivityDate] = useState('')
   const [newActivityLink, setNewActivityLink] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  // Helper function to get trip-group-specific storage key
-  const getStorageKey = (baseKey) => {
-    const tripGroup = currentUser?.tripGroup || 'default'
-    return `${baseKey}_${tripGroup}`
-  }
+  const tripGroup = currentUser?.tripGroup || 'default'
 
+  // Real-time listener for activities
   useEffect(() => {
-    const storageKey = getStorageKey('tripActivities')
-    const savedActivities = localStorage.getItem(storageKey)
-    if (savedActivities) {
-      setActivities(JSON.parse(savedActivities))
-    }
-  }, [currentUser?.tripGroup])
+    if (!currentUser?.tripGroup) return
 
-  const saveActivities = (updatedActivities) => {
-    setActivities(updatedActivities)
-    const storageKey = getStorageKey('tripActivities')
-    localStorage.setItem(storageKey, JSON.stringify(updatedActivities))
-  }
+    setLoading(true)
+    const unsubscribe = activitiesService.subscribe(tripGroup, (updatedActivities) => {
+      setActivities(updatedActivities)
+      setLoading(false)
+    })
 
-  const addActivity = (e) => {
+    return () => unsubscribe()
+  }, [tripGroup, currentUser?.tripGroup])
+
+  const addActivity = async (e) => {
     e.preventDefault()
     if (newActivity.trim() && newActivityAuthor) {
-      const activity = {
-        id: Date.now(),
-        name: newActivity.trim(),
-        author: newActivityAuthor,
-        location: newActivityLocation.trim(),
-        preferredDate: newActivityDate,
-        link: newActivityLink.trim(),
-        completed: false,
-        confirmed: false,
-        date: new Date().toISOString(),
-        createdById: currentUser.id,
-        createdBy: currentUser.name
+      try {
+        const activity = {
+          name: newActivity.trim(),
+          author: newActivityAuthor,
+          location: newActivityLocation.trim(),
+          preferredDate: newActivityDate,
+          link: newActivityLink.trim(),
+          completed: false,
+          confirmed: false,
+          date: new Date().toISOString(),
+          createdById: currentUser.id,
+          createdBy: currentUser.name
+        }
+        await activitiesService.add(tripGroup, activity)
+        setNewActivity('')
+        setNewActivityAuthor('')
+        setNewActivityLocation('')
+        setNewActivityDate('')
+        setNewActivityLink('')
+        setShowAddForm(false)
+      } catch (error) {
+        console.error('Error adding activity:', error)
+        alert('Failed to add activity. Please try again.')
       }
-      saveActivities([...activities, activity])
-      setNewActivity('')
-      setNewActivityAuthor('')
-      setNewActivityLocation('')
-      setNewActivityDate('')
-      setNewActivityLink('')
-      setShowAddForm(false)
     }
   }
 
-  const toggleActivityStatus = (activityId, field) => {
-    const updatedActivities = activities.map(activity => {
-      if (activity.id === activityId) {
-        return { ...activity, [field]: !activity[field] }
-      }
-      return activity
-    })
-    saveActivities(updatedActivities)
+  const toggleActivityStatus = async (activityId, field) => {
+    try {
+      const activity = activities.find(a => a.id === activityId)
+      if (!activity) return
+      await activitiesService.update(tripGroup, activityId, { [field]: !activity[field] })
+    } catch (error) {
+      console.error('Error updating activity:', error)
+      alert('Failed to update activity. Please try again.')
+    }
   }
 
-  const deleteActivity = (activityId) => {
+  const deleteActivity = async (activityId) => {
     const activity = activities.find(a => a.id === activityId)
-    const canDelete = currentUser.isAdmin || activity.createdById === currentUser.id
+    const canDelete = currentUser.isAdmin || activity?.createdById === currentUser.id
     
     if (canDelete && window.confirm('Are you sure you want to delete this activity?')) {
-      saveActivities(activities.filter(activity => activity.id !== activityId))
+      try {
+        await activitiesService.delete(tripGroup, activityId)
+      } catch (error) {
+        console.error('Error deleting activity:', error)
+        alert('Failed to delete activity. Please try again.')
+      }
     }
   }
 
   const completedActivities = activities.filter(activity => activity.completed)
   const pendingActivities = activities.filter(activity => !activity.completed)
   const confirmedActivities = activities.filter(activity => activity.confirmed && !activity.completed)
+
+  if (loading) {
+    return (
+      <div>
+        <h1 className="pixel-title">🎯 Activities Wishlist</h1>
+        <div className="pixel-card" style={{ textAlign: 'center' }}>
+          <p>Loading activities...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>

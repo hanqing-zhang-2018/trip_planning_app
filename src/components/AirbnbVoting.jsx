@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { FiPlus, FiThumbsUp, FiThumbsDown, FiStar, FiTrash2 } from 'react-icons/fi'
+import { airbnbsService } from '../firebase/db'
 
 function AirbnbVoting({ participants, currentUser }) {
   const [airbnbs, setAirbnbs] = useState([])
@@ -13,86 +14,97 @@ function AirbnbVoting({ participants, currentUser }) {
   const [newBathrooms, setNewBathrooms] = useState('')
   const [newGuests, setNewGuests] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  // Helper function to get trip-group-specific storage key
-  const getStorageKey = (baseKey) => {
-    const tripGroup = currentUser?.tripGroup || 'default'
-    return `${baseKey}_${tripGroup}`
-  }
+  const tripGroup = currentUser?.tripGroup || 'default'
 
+  // Real-time listener for airbnbs
   useEffect(() => {
-    const storageKey = getStorageKey('tripAirbnbs')
-    const savedAirbnbs = localStorage.getItem(storageKey)
-    if (savedAirbnbs) {
-      setAirbnbs(JSON.parse(savedAirbnbs))
-    }
-  }, [currentUser?.tripGroup])
+    if (!currentUser?.tripGroup) return
 
-  const saveAirbnbs = (updatedAirbnbs) => {
-    setAirbnbs(updatedAirbnbs)
-    const storageKey = getStorageKey('tripAirbnbs')
-    localStorage.setItem(storageKey, JSON.stringify(updatedAirbnbs))
-  }
+    setLoading(true)
+    const unsubscribe = airbnbsService.subscribe(tripGroup, (updatedAirbnbs) => {
+      setAirbnbs(updatedAirbnbs)
+      setLoading(false)
+    })
 
-  const addAirbnb = (e) => {
+    return () => unsubscribe()
+  }, [tripGroup, currentUser?.tripGroup])
+
+  const addAirbnb = async (e) => {
     e.preventDefault()
     if (newLink.trim() && newTitle.trim()) {
-      const newAirbnb = {
-        id: Date.now(),
-        title: newTitle.trim(),
-        description: newDescription.trim(),
-        price: newPrice.trim(),
-        link: newLink.trim(),
-        authorId: currentUser.id,
-        author: currentUser.name,
-        votes: [],
-        dislikes: [],
-        comments: []
+      try {
+        const newAirbnb = {
+          title: newTitle.trim(),
+          description: newDescription.trim(),
+          price: newPrice.trim(),
+          link: newLink.trim(),
+          score: newScore || null,
+          reviewCount: newReviewCount || null,
+          bedrooms: newBedrooms || null,
+          bathrooms: newBathrooms || null,
+          guests: newGuests || null,
+          authorId: currentUser.id,
+          author: currentUser.name,
+          votes: { like: [], dislike: [] },
+          comments: []
+        }
+        
+        await airbnbsService.add(tripGroup, newAirbnb)
+        setNewLink('')
+        setNewTitle('')
+        setNewDescription('')
+        setNewPrice('')
+        setNewScore('')
+        setNewReviewCount('')
+        setNewBedrooms('')
+        setNewBathrooms('')
+        setNewGuests('')
+        setShowAddForm(false)
+      } catch (error) {
+        console.error('Error adding airbnb:', error)
+        alert('Failed to add property. Please try again.')
       }
-      
-      saveAirbnbs([...airbnbs, newAirbnb])
-      setNewLink('')
-      setNewTitle('')
-      setNewDescription('')
-      setNewPrice('')
-      setNewScore('')
-      setNewReviewCount('')
-      setNewBedrooms('')
-      setNewBathrooms('')
-      setNewGuests('')
-      setShowAddForm(false)
     }
   }
 
-  const handleVote = (airbnbId, voteType, participantName) => {
-    const updatedAirbnbs = airbnbs.map(airbnb => {
-      if (airbnb.id === airbnbId) {
-        const votes = { ...airbnb.votes }
-        
-        // Remove existing vote from this participant
-        votes.like = votes.like.filter(name => name !== participantName)
-        votes.dislike = votes.dislike.filter(name => name !== participantName)
-        
-        // Add new vote
-        if (voteType === 'like') {
-          votes.like.push(participantName)
-        } else if (voteType === 'dislike') {
-          votes.dislike.push(participantName)
-        }
-        
-        return { ...airbnb, votes }
+  const handleVote = async (airbnbId, voteType, participantName) => {
+    try {
+      const airbnb = airbnbs.find(a => a.id === airbnbId)
+      if (!airbnb) return
+
+      const votes = { ...airbnb.votes }
+      
+      // Remove existing vote from this participant
+      votes.like = votes.like.filter(name => name !== participantName)
+      votes.dislike = votes.dislike.filter(name => name !== participantName)
+      
+      // Add new vote
+      if (voteType === 'like') {
+        votes.like.push(participantName)
+      } else if (voteType === 'dislike') {
+        votes.dislike.push(participantName)
       }
-      return airbnb
-    })
-    saveAirbnbs(updatedAirbnbs)
+      
+      await airbnbsService.update(tripGroup, airbnbId, { votes })
+    } catch (error) {
+      console.error('Error updating vote:', error)
+      alert('Failed to update vote. Please try again.')
+    }
   }
 
-  const deleteAirbnb = (airbnbId) => {
+  const deleteAirbnb = async (airbnbId) => {
     const airbnb = airbnbs.find(a => a.id === airbnbId)
-    const canDelete = currentUser.isAdmin || airbnb.authorId === currentUser.id
+    const canDelete = currentUser.isAdmin || airbnb?.authorId === currentUser.id
     
     if (canDelete && window.confirm('Are you sure you want to delete this property?')) {
-      saveAirbnbs(airbnbs.filter(airbnb => airbnb.id !== airbnbId))
+      try {
+        await airbnbsService.delete(tripGroup, airbnbId)
+      } catch (error) {
+        console.error('Error deleting airbnb:', error)
+        alert('Failed to delete property. Please try again.')
+      }
     }
   }
 
@@ -101,6 +113,17 @@ function AirbnbVoting({ participants, currentUser }) {
     const bScore = b.votes.like.length - b.votes.dislike.length
     return bScore - aScore
   })
+
+  if (loading) {
+    return (
+      <div>
+        <h1 className="pixel-title">🏠 Airbnb Voting</h1>
+        <div className="pixel-card" style={{ textAlign: 'center' }}>
+          <p>Loading properties...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>

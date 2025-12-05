@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { FiShuffle, FiRefreshCw, FiPlus, FiTrash2 } from 'react-icons/fi'
+import { truthOrDareService } from '../firebase/db'
 
 const defaultTruthQuestions = [
   "What's the most embarrassing thing that happened to you on a trip?",
@@ -47,67 +48,50 @@ function TruthOrDare({ currentUser }) {
   const [newCustomQuestion, setNewCustomQuestion] = useState('')
   const [newCustomType, setNewCustomType] = useState('truth')
 
-  // Helper function to get trip-group-specific storage key
-  const getStorageKey = (baseKey) => {
-    const tripGroup = currentUser?.tripGroup || 'default'
-    return `${baseKey}_${tripGroup}`
-  }
+  const tripGroup = currentUser?.tripGroup || 'default'
 
+  // Real-time listeners for custom questions
   useEffect(() => {
-    const truthKey = getStorageKey('tripCustomTruth')
-    const dareKey = getStorageKey('tripCustomDare')
-    const savedCustomTruth = localStorage.getItem(truthKey)
-    const savedCustomDare = localStorage.getItem(dareKey)
-    
-    if (savedCustomTruth) {
-      setCustomTruthQuestions(JSON.parse(savedCustomTruth))
-    }
-    if (savedCustomDare) {
-      setCustomDareChallenges(JSON.parse(savedCustomDare))
-    }
-  }, [currentUser?.tripGroup])
+    if (!currentUser?.tripGroup) return
 
-  const saveCustomQuestions = (type, questions) => {
-    if (type === 'truth') {
+    const unsubscribeTruth = truthOrDareService.subscribe(tripGroup, 'truth', (questions) => {
       setCustomTruthQuestions(questions)
-      const storageKey = getStorageKey('tripCustomTruth')
-      localStorage.setItem(storageKey, JSON.stringify(questions))
-    } else {
-      setCustomDareChallenges(questions)
-      const storageKey = getStorageKey('tripCustomDare')
-      localStorage.setItem(storageKey, JSON.stringify(questions))
-    }
-  }
+    })
 
-  const addCustomQuestion = (e) => {
+    const unsubscribeDare = truthOrDareService.subscribe(tripGroup, 'dare', (questions) => {
+      setCustomDareChallenges(questions)
+    })
+
+    return () => {
+      unsubscribeTruth()
+      unsubscribeDare()
+    }
+  }, [tripGroup, currentUser?.tripGroup])
+
+  const addCustomQuestion = async (e) => {
     e.preventDefault()
     if (newCustomQuestion.trim()) {
-      const question = {
-        id: Date.now(),
-        text: newCustomQuestion.trim(),
-        type: newCustomType
+      try {
+        const question = {
+          text: newCustomQuestion.trim(),
+          type: newCustomType
+        }
+        await truthOrDareService.add(tripGroup, newCustomType, question)
+        setNewCustomQuestion('')
+        setShowAddForm(false)
+      } catch (error) {
+        console.error('Error adding custom question:', error)
+        alert('Failed to add question. Please try again.')
       }
-      
-      if (newCustomType === 'truth') {
-        const updatedQuestions = [...customTruthQuestions, question]
-        saveCustomQuestions('truth', updatedQuestions)
-      } else {
-        const updatedQuestions = [...customDareChallenges, question]
-        saveCustomQuestions('dare', updatedQuestions)
-      }
-      
-      setNewCustomQuestion('')
-      setShowAddForm(false)
     }
   }
 
-  const deleteCustomQuestion = (questionId, type) => {
-    if (type === 'truth') {
-      const updatedQuestions = customTruthQuestions.filter(q => q.id !== questionId)
-      saveCustomQuestions('truth', updatedQuestions)
-    } else {
-      const updatedQuestions = customDareChallenges.filter(q => q.id !== questionId)
-      saveCustomQuestions('dare', updatedQuestions)
+  const deleteCustomQuestion = async (questionId, type) => {
+    try {
+      await truthOrDareService.delete(tripGroup, type, questionId)
+    } catch (error) {
+      console.error('Error deleting question:', error)
+      alert('Failed to delete question. Please try again.')
     }
   }
 

@@ -7,6 +7,7 @@ import ExpenseTracker from './components/ExpenseTracker'
 import TruthOrDare from './components/TruthOrDare'
 import FoodWishlist from './components/FoodWishlist'
 import ActivitiesWishlist from './components/ActivitiesWishlist'
+import { participantsService, tripTitleService } from './firebase/db'
 import './App.css'
 
 function App() {
@@ -18,50 +19,39 @@ function App() {
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [newTitle, setNewTitle] = useState('')
 
+  // Load user from localStorage on mount
   useEffect(() => {
     console.log('App useEffect running...')
-    // Load user from localStorage
     const savedUser = localStorage.getItem('tripUser')
     if (savedUser) {
       const user = JSON.parse(savedUser)
       setCurrentUser(user)
-      
-      // Load trip-group specific data
-      const tripGroup = user.tripGroup || 'default'
-      
-      // Load participants from localStorage for this trip group
-      const savedParticipants = localStorage.getItem(`tripParticipants_${tripGroup}`)
-      if (savedParticipants) {
-        setParticipants(JSON.parse(savedParticipants))
-      }
-
-      // Load trip title from localStorage for this trip group
-      const savedTitle = localStorage.getItem(`tripTitle_${tripGroup}`)
-      if (savedTitle) {
-        setTripTitle(savedTitle)
-      } else {
-        // Set default trip title based on trip group
-        if (tripGroup === 'Hawaii Xmas 2025') {
-          setTripTitle('Hawaii Xmas 2025')
-        }
-        // Add more default titles here as needed
-      }
-    } else {
-      // Load participants from localStorage (legacy support)
-      const savedParticipants = localStorage.getItem('tripParticipants')
-      if (savedParticipants) {
-        setParticipants(JSON.parse(savedParticipants))
-      }
-
-      // Load trip title from localStorage (legacy support)
-      const savedTitle = localStorage.getItem('tripTitle')
-      if (savedTitle) {
-        setTripTitle(savedTitle)
-      }
     }
   }, [])
 
-  const handleLogin = (user) => {
+  // Real-time listeners for participants and trip title
+  useEffect(() => {
+    if (!currentUser?.tripGroup) return
+
+    const tripGroup = currentUser.tripGroup
+
+    // Subscribe to participants
+    const unsubscribeParticipants = participantsService.subscribe(tripGroup, (updatedParticipants) => {
+      setParticipants(updatedParticipants)
+    })
+
+    // Subscribe to trip title
+    const unsubscribeTitle = tripTitleService.subscribe(tripGroup, (title) => {
+      setTripTitle(title)
+    })
+
+    return () => {
+      unsubscribeParticipants()
+      unsubscribeTitle()
+    }
+  }, [currentUser?.tripGroup])
+
+  const handleLogin = async (user) => {
     // Add trip group to user data if it exists
     const userWithTripGroup = {
       ...user,
@@ -71,34 +61,32 @@ function App() {
     setCurrentUser(userWithTripGroup)
     localStorage.setItem('tripUser', JSON.stringify(userWithTripGroup))
     
-    // Set the correct trip title based on trip group
     const tripGroup = userWithTripGroup.tripGroup
-    const savedTitle = localStorage.getItem(`tripTitle_${tripGroup}`)
-    if (savedTitle) {
-      setTripTitle(savedTitle)
-    } else {
-      // Set default trip title based on trip group
-      if (tripGroup === 'Hawaii Xmas 2025') {
-        setTripTitle('Hawaii Xmas 2025')
-        localStorage.setItem(`tripTitle_${tripGroup}`, 'Hawaii Xmas 2025')
-      }
-      // Add more default titles here as needed
+
+    // Initialize trip title if it doesn't exist
+    try {
+      // Check if trip document exists, if not create it with default title
+      const defaultTitle = tripGroup === 'Hawaii Xmas 2025' ? 'Hawaii Xmas 2025' : 'Trip Planning'
+      await tripTitleService.update(tripGroup, defaultTitle)
+    } catch (error) {
+      console.error('Error initializing trip title:', error)
     }
     
     // Add user to participants if not already there
-    if (!participants.find(p => p.id === user.id && p.tripGroup === userWithTripGroup.tripGroup)) {
-      const updatedParticipants = [...participants, userWithTripGroup]
-      setParticipants(updatedParticipants)
-      localStorage.setItem(`tripParticipants_${userWithTripGroup.tripGroup}`, JSON.stringify(updatedParticipants))
-    } else {
-      // Update existing user's avatar and admin status if they're logging in again
-      const updatedParticipants = participants.map(p => 
-        p.id === user.id && p.tripGroup === userWithTripGroup.tripGroup 
-          ? { ...p, avatar: user.avatar, isAdmin: user.isAdmin } 
-          : p
-      )
-      setParticipants(updatedParticipants)
-      localStorage.setItem(`tripParticipants_${userWithTripGroup.tripGroup}`, JSON.stringify(updatedParticipants))
+    try {
+      const existingParticipant = participants.find(p => p.id === user.id && p.tripGroup === tripGroup)
+      if (!existingParticipant) {
+        await participantsService.add(tripGroup, userWithTripGroup)
+      } else {
+        // Update existing user's avatar and admin status
+        await participantsService.update(tripGroup, user.id, {
+          avatar: user.avatar,
+          isAdmin: user.isAdmin,
+          name: user.name
+        })
+      }
+    } catch (error) {
+      console.error('Error adding/updating participant:', error)
     }
   }
 
@@ -107,71 +95,50 @@ function App() {
     localStorage.removeItem('tripUser')
   }
 
-  const getTripGroupKey = (baseKey) => {
-    const tripGroup = currentUser?.tripGroup || 'default'
-    return `${baseKey}_${tripGroup}`
-  }
 
-  const removeUser = (userId) => {
+  const removeUser = async (userId) => {
     const userToRemove = participants.find(p => p.id === userId)
     if (!userToRemove) return
     
     if (window.confirm(`Are you sure you want to remove ${userToRemove.name} and all their data?`)) {
-      const updatedParticipants = participants.filter(p => p.id !== userId)
-      setParticipants(updatedParticipants)
-      localStorage.setItem(`tripParticipants_${currentUser.tripGroup}`, JSON.stringify(updatedParticipants))
-      
-      // Remove user's data from all components
-      const keysToClean = [
-        'tripAirbnbs', 'tripExpenses', 'tripFoodWishlist', 'tripActivities'
-      ]
-      
-      keysToClean.forEach(key => {
-        const data = localStorage.getItem(getTripGroupKey(key))
-        if (data) {
-          const parsedData = JSON.parse(data)
-          // Remove items created by this user
-          const cleanedData = parsedData.filter(item => item.authorId !== userId)
-          localStorage.setItem(getTripGroupKey(key), JSON.stringify(cleanedData))
-        }
-      })
+      try {
+        await participantsService.delete(currentUser.tripGroup, userId)
+        // Note: User's data in other collections will remain but can be cleaned up by admin if needed
+      } catch (error) {
+        console.error('Error removing user:', error)
+        alert('Failed to remove user. Please try again.')
+      }
     }
   }
 
-  const updateTripTitle = () => {
+  const updateTripTitle = async () => {
     if (newTitle.trim()) {
-      setTripTitle(newTitle.trim())
-      localStorage.setItem(getTripGroupKey('tripTitle'), newTitle.trim())
-      setIsEditingTitle(false)
-      setNewTitle('')
+      try {
+        await tripTitleService.update(currentUser.tripGroup, newTitle.trim())
+        setIsEditingTitle(false)
+        setNewTitle('')
+      } catch (error) {
+        console.error('Error updating trip title:', error)
+        alert('Failed to update trip title. Please try again.')
+      }
     }
   }
 
   const clearAllData = () => {
-    if (window.confirm('Are you sure you want to clear ALL data for this trip group? This cannot be undone!')) {
-      // Clear all localStorage data for this trip group
-      const keysToClear = [
-        'tripAirbnbs', 'tripExpenses', 'tripFoodWishlist', 'tripActivities',
-        'tripParticipants', 'tripTitle', 'tripUser'
-      ]
-      keysToClear.forEach(key => localStorage.removeItem(getTripGroupKey(key)))
-      
-      // Reset state
-      setParticipants([])
-      setTripTitle('Trip Planning')
+    if (window.confirm('Are you sure you want to clear ALL data for this trip group? This cannot be undone! This will delete all data from Firebase.')) {
+      // Note: This would require deleting all subcollections in Firestore
+      // For now, we'll just clear local state and logout
+      // Full data deletion would need to be implemented server-side or via Firebase Admin SDK
+      alert('Full data deletion requires Firebase Admin SDK. For now, data remains in Firebase.')
       setCurrentUser(null)
+      localStorage.removeItem('tripUser')
     }
   }
 
   const clearUserCache = () => {
-    if (window.confirm('Clear cached user data for this trip group? This will force all users to log in again with updated avatars.')) {
-      // Clear user-related localStorage data for this trip group
-      localStorage.removeItem(getTripGroupKey('tripUser'))
-      localStorage.removeItem(getTripGroupKey('tripParticipants'))
-      
-      // Reset user state
+    if (window.confirm('Clear cached user data? This will force you to log in again.')) {
       setCurrentUser(null)
-      setParticipants([])
+      localStorage.removeItem('tripUser')
     }
   }
 

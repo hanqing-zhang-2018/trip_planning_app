@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { FiPlus, FiTrash2 } from 'react-icons/fi'
+import { expensesService } from '../firebase/db'
 
 function ExpenseTracker({ participants, currentUser }) {
   const [expenses, setExpenses] = useState([])
@@ -9,54 +10,59 @@ function ExpenseTracker({ participants, currentUser }) {
     paidBy: '',
     splitBetween: []
   })
+  const [loading, setLoading] = useState(true)
 
-  // Helper function to get trip-group-specific storage key
-  const getStorageKey = (baseKey) => {
-    const tripGroup = currentUser?.tripGroup || 'default'
-    return `${baseKey}_${tripGroup}`
-  }
+  const tripGroup = currentUser?.tripGroup || 'default'
 
+  // Real-time listener for expenses
   useEffect(() => {
-    const storageKey = getStorageKey('tripExpenses')
-    const savedExpenses = localStorage.getItem(storageKey)
-    if (savedExpenses) {
-      setExpenses(JSON.parse(savedExpenses))
-    }
-  }, [currentUser?.tripGroup])
+    if (!currentUser?.tripGroup) return
 
-  const saveExpenses = (updatedExpenses) => {
-    setExpenses(updatedExpenses)
-    const storageKey = getStorageKey('tripExpenses')
-    localStorage.setItem(storageKey, JSON.stringify(updatedExpenses))
-  }
+    setLoading(true)
+    const unsubscribe = expensesService.subscribe(tripGroup, (updatedExpenses) => {
+      setExpenses(updatedExpenses)
+      setLoading(false)
+    })
 
-  const addExpense = (e) => {
+    return () => unsubscribe()
+  }, [tripGroup, currentUser?.tripGroup])
+
+  const addExpense = async (e) => {
     e.preventDefault()
     if (newExpense.description && newExpense.amount && newExpense.paidBy && newExpense.splitBetween.length > 0) {
-      const expense = {
-        id: Date.now(),
-        ...newExpense,
-        amount: parseFloat(newExpense.amount),
-        date: new Date().toISOString(),
-        createdById: currentUser.id,
-        createdBy: currentUser.name
+      try {
+        const expense = {
+          ...newExpense,
+          amount: parseFloat(newExpense.amount),
+          date: new Date().toISOString(),
+          createdById: currentUser.id,
+          createdBy: currentUser.name
+        }
+        await expensesService.add(tripGroup, expense)
+        setNewExpense({
+          description: '',
+          amount: '',
+          paidBy: '',
+          splitBetween: []
+        })
+      } catch (error) {
+        console.error('Error adding expense:', error)
+        alert('Failed to add expense. Please try again.')
       }
-      saveExpenses([...expenses, expense])
-      setNewExpense({
-        description: '',
-        amount: '',
-        paidBy: '',
-        splitBetween: []
-      })
     }
   }
 
-  const deleteExpense = (expenseId) => {
+  const deleteExpense = async (expenseId) => {
     const expense = expenses.find(e => e.id === expenseId)
-    const canDelete = currentUser.isAdmin || expense.createdById === currentUser.id
+    const canDelete = currentUser.isAdmin || expense?.createdById === currentUser.id
     
     if (canDelete && window.confirm('Are you sure you want to delete this expense?')) {
-      saveExpenses(expenses.filter(expense => expense.id !== expenseId))
+      try {
+        await expensesService.delete(tripGroup, expenseId)
+      } catch (error) {
+        console.error('Error deleting expense:', error)
+        alert('Failed to delete expense. Please try again.')
+      }
     }
   }
 
@@ -91,6 +97,17 @@ function ExpenseTracker({ participants, currentUser }) {
   }
 
   const balances = calculateBalances()
+
+  if (loading) {
+    return (
+      <div>
+        <h1 className="pixel-title">💰 Expense Tracker</h1>
+        <div className="pixel-card" style={{ textAlign: 'center' }}>
+          <p>Loading expenses...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
