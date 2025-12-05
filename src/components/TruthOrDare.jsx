@@ -54,17 +54,35 @@ function TruthOrDare({ currentUser }) {
   useEffect(() => {
     if (!currentUser?.tripGroup) return
 
-    const unsubscribeTruth = truthOrDareService.subscribe(tripGroup, 'truth', (questions) => {
-      setCustomTruthQuestions(questions)
-    })
+    try {
+      const unsubscribeTruth = truthOrDareService.subscribe(
+        tripGroup, 
+        'truth', 
+        (questions) => {
+          setCustomTruthQuestions(questions || [])
+        },
+        (error) => {
+          console.error('Error loading truth questions:', error)
+        }
+      )
 
-    const unsubscribeDare = truthOrDareService.subscribe(tripGroup, 'dare', (questions) => {
-      setCustomDareChallenges(questions)
-    })
+      const unsubscribeDare = truthOrDareService.subscribe(
+        tripGroup, 
+        'dare', 
+        (questions) => {
+          setCustomDareChallenges(questions || [])
+        },
+        (error) => {
+          console.error('Error loading dare questions:', error)
+        }
+      )
 
-    return () => {
-      unsubscribeTruth()
-      unsubscribeDare()
+      return () => {
+        unsubscribeTruth()
+        unsubscribeDare()
+      }
+    } catch (error) {
+      console.error('Error setting up truth or dare listeners:', error)
     }
   }, [tripGroup, currentUser?.tripGroup])
 

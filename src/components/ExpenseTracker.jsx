@@ -16,15 +16,29 @@ function ExpenseTracker({ participants, currentUser }) {
 
   // Real-time listener for expenses
   useEffect(() => {
-    if (!currentUser?.tripGroup) return
+    if (!currentUser?.tripGroup) {
+      setLoading(false)
+      return
+    }
 
     setLoading(true)
-    const unsubscribe = expensesService.subscribe(tripGroup, (updatedExpenses) => {
-      setExpenses(updatedExpenses)
-      setLoading(false)
-    })
+    try {
+      const unsubscribe = expensesService.subscribe(tripGroup, (updatedExpenses) => {
+        setExpenses(updatedExpenses || [])
+        setLoading(false)
+      }, (error) => {
+        console.error('Error loading expenses:', error)
+        setExpenses([])
+        setLoading(false)
+        alert('Failed to load expenses. Please check your Firebase configuration.')
+      })
 
-    return () => unsubscribe()
+      return () => unsubscribe()
+    } catch (error) {
+      console.error('Error setting up expenses listener:', error)
+      setExpenses([])
+      setLoading(false)
+    }
   }, [tripGroup, currentUser?.tripGroup])
 
   const addExpense = async (e) => {

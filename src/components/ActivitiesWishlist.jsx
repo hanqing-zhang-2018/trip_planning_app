@@ -16,15 +16,29 @@ function ActivitiesWishlist({ participants, currentUser }) {
 
   // Real-time listener for activities
   useEffect(() => {
-    if (!currentUser?.tripGroup) return
+    if (!currentUser?.tripGroup) {
+      setLoading(false)
+      return
+    }
 
     setLoading(true)
-    const unsubscribe = activitiesService.subscribe(tripGroup, (updatedActivities) => {
-      setActivities(updatedActivities)
-      setLoading(false)
-    })
+    try {
+      const unsubscribe = activitiesService.subscribe(tripGroup, (updatedActivities) => {
+        setActivities(updatedActivities || [])
+        setLoading(false)
+      }, (error) => {
+        console.error('Error loading activities:', error)
+        setActivities([])
+        setLoading(false)
+        alert('Failed to load activities. Please check your Firebase configuration.')
+      })
 
-    return () => unsubscribe()
+      return () => unsubscribe()
+    } catch (error) {
+      console.error('Error setting up activities listener:', error)
+      setActivities([])
+      setLoading(false)
+    }
   }, [tripGroup, currentUser?.tripGroup])
 
   const addActivity = async (e) => {

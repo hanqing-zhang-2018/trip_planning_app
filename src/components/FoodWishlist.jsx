@@ -17,15 +17,29 @@ function FoodWishlist({ participants, currentUser }) {
 
   // Real-time listener for food wishlist
   useEffect(() => {
-    if (!currentUser?.tripGroup) return
+    if (!currentUser?.tripGroup) {
+      setLoading(false)
+      return
+    }
 
     setLoading(true)
-    const unsubscribe = foodWishlistService.subscribe(tripGroup, (updatedItems) => {
-      setWishlistItems(updatedItems)
-      setLoading(false)
-    })
+    try {
+      const unsubscribe = foodWishlistService.subscribe(tripGroup, (updatedItems) => {
+        setWishlistItems(updatedItems || [])
+        setLoading(false)
+      }, (error) => {
+        console.error('Error loading food items:', error)
+        setWishlistItems([])
+        setLoading(false)
+        alert('Failed to load food items. Please check your Firebase configuration.')
+      })
 
-    return () => unsubscribe()
+      return () => unsubscribe()
+    } catch (error) {
+      console.error('Error setting up food wishlist listener:', error)
+      setWishlistItems([])
+      setLoading(false)
+    }
   }, [tripGroup, currentUser?.tripGroup])
 
   const addWishlistItem = async (e) => {

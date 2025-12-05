@@ -31,15 +31,28 @@ const getDocRef = (collectionName, tripGroup, docId) => {
 // ==================== PARTICIPANTS ====================
 export const participantsService = {
   // Get all participants for a trip group (real-time)
-  subscribe: (tripGroup, callback) => {
-    const participantsRef = getCollectionRef('participants', tripGroup)
-    return onSnapshot(participantsRef, (snapshot) => {
-      const participants = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      callback(participants)
-    })
+  subscribe: (tripGroup, callback, onError) => {
+    try {
+      const participantsRef = getCollectionRef('participants', tripGroup)
+      return onSnapshot(
+        participantsRef, 
+        (snapshot) => {
+          const participants = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }))
+          callback(participants)
+        },
+        (error) => {
+          console.error('Firestore error in participants:', error)
+          if (onError) onError(error)
+        }
+      )
+    } catch (error) {
+      console.error('Error setting up participants listener:', error)
+      if (onError) onError(error)
+      return () => {} // Return empty unsubscribe function
+    }
   },
 
   // Add a participant
@@ -68,12 +81,25 @@ export const participantsService = {
 // ==================== TRIP TITLE ====================
 export const tripTitleService = {
   // Get trip title (real-time)
-  subscribe: (tripGroup, callback) => {
-    const tripRef = doc(db, `trips/${tripGroup}`)
-    return onSnapshot(tripRef, (snapshot) => {
-      const data = snapshot.data()
-      callback(data?.title || 'Trip Planning')
-    })
+  subscribe: (tripGroup, callback, onError) => {
+    try {
+      const tripRef = doc(db, `trips/${tripGroup}`)
+      return onSnapshot(
+        tripRef, 
+        (snapshot) => {
+          const data = snapshot.data()
+          callback(data?.title || 'Trip Planning')
+        },
+        (error) => {
+          console.error('Firestore error in trip title:', error)
+          if (onError) onError(error)
+        }
+      )
+    } catch (error) {
+      console.error('Error setting up trip title listener:', error)
+      if (onError) onError(error)
+      return () => {} // Return empty unsubscribe function
+    }
   },
 
   // Update trip title (creates document if it doesn't exist)
@@ -99,15 +125,28 @@ export const tripTitleService = {
 // ==================== AIRBNBS ====================
 export const airbnbsService = {
   // Get all airbnbs for a trip group (real-time)
-  subscribe: (tripGroup, callback) => {
-    const airbnbsRef = getCollectionRef('airbnbs', tripGroup)
-    return onSnapshot(airbnbsRef, (snapshot) => {
-      const airbnbs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      callback(airbnbs)
-    })
+  subscribe: (tripGroup, callback, onError) => {
+    try {
+      const airbnbsRef = getCollectionRef('airbnbs', tripGroup)
+      return onSnapshot(
+        airbnbsRef, 
+        (snapshot) => {
+          const airbnbs = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }))
+          callback(airbnbs)
+        },
+        (error) => {
+          console.error('Firestore error in airbnbs:', error)
+          if (onError) onError(error)
+        }
+      )
+    } catch (error) {
+      console.error('Error setting up airbnbs listener:', error)
+      if (onError) onError(error)
+      return () => {} // Return empty unsubscribe function
+    }
   },
 
   // Add an airbnb
@@ -139,15 +178,28 @@ export const airbnbsService = {
 // ==================== EXPENSES ====================
 export const expensesService = {
   // Get all expenses for a trip group (real-time)
-  subscribe: (tripGroup, callback) => {
-    const expensesRef = getCollectionRef('expenses', tripGroup)
-    return onSnapshot(expensesRef, (snapshot) => {
-      const expenses = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      callback(expenses)
-    })
+  subscribe: (tripGroup, callback, onError) => {
+    try {
+      const expensesRef = getCollectionRef('expenses', tripGroup)
+      return onSnapshot(
+        expensesRef, 
+        (snapshot) => {
+          const expenses = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }))
+          callback(expenses)
+        },
+        (error) => {
+          console.error('Firestore error in expenses:', error)
+          if (onError) onError(error)
+        }
+      )
+    } catch (error) {
+      console.error('Error setting up expenses listener:', error)
+      if (onError) onError(error)
+      return () => {} // Return empty unsubscribe function
+    }
   },
 
   // Add an expense
@@ -179,15 +231,28 @@ export const expensesService = {
 // ==================== FOOD WISHLIST ====================
 export const foodWishlistService = {
   // Get all food items for a trip group (real-time)
-  subscribe: (tripGroup, callback) => {
-    const foodRef = getCollectionRef('foodWishlist', tripGroup)
-    return onSnapshot(foodRef, (snapshot) => {
-      const items = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      callback(items)
-    })
+  subscribe: (tripGroup, callback, onError) => {
+    try {
+      const foodRef = getCollectionRef('foodWishlist', tripGroup)
+      return onSnapshot(
+        foodRef, 
+        (snapshot) => {
+          const items = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }))
+          callback(items)
+        },
+        (error) => {
+          console.error('Firestore error in food wishlist:', error)
+          if (onError) onError(error)
+        }
+      )
+    } catch (error) {
+      console.error('Error setting up food wishlist listener:', error)
+      if (onError) onError(error)
+      return () => {} // Return empty unsubscribe function
+    }
   },
 
   // Add a food item
@@ -219,15 +284,28 @@ export const foodWishlistService = {
 // ==================== ACTIVITIES ====================
 export const activitiesService = {
   // Get all activities for a trip group (real-time)
-  subscribe: (tripGroup, callback) => {
-    const activitiesRef = getCollectionRef('activities', tripGroup)
-    return onSnapshot(activitiesRef, (snapshot) => {
-      const activities = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      callback(activities)
-    })
+  subscribe: (tripGroup, callback, onError) => {
+    try {
+      const activitiesRef = getCollectionRef('activities', tripGroup)
+      return onSnapshot(
+        activitiesRef, 
+        (snapshot) => {
+          const activities = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }))
+          callback(activities)
+        },
+        (error) => {
+          console.error('Firestore error in activities:', error)
+          if (onError) onError(error)
+        }
+      )
+    } catch (error) {
+      console.error('Error setting up activities listener:', error)
+      if (onError) onError(error)
+      return () => {} // Return empty unsubscribe function
+    }
   },
 
   // Add an activity
@@ -259,15 +337,28 @@ export const activitiesService = {
 // ==================== TRUTH OR DARE ====================
 export const truthOrDareService = {
   // Get custom questions (real-time)
-  subscribe: (tripGroup, type, callback) => {
-    const questionsRef = getCollectionRef(`truthOrDare_${type}`, tripGroup)
-    return onSnapshot(questionsRef, (snapshot) => {
-      const questions = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      callback(questions)
-    })
+  subscribe: (tripGroup, type, callback, onError) => {
+    try {
+      const questionsRef = getCollectionRef(`truthOrDare_${type}`, tripGroup)
+      return onSnapshot(
+        questionsRef, 
+        (snapshot) => {
+          const questions = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }))
+          callback(questions)
+        },
+        (error) => {
+          console.error(`Firestore error in truthOrDare ${type}:`, error)
+          if (onError) onError(error)
+        }
+      )
+    } catch (error) {
+      console.error(`Error setting up truthOrDare ${type} listener:`, error)
+      if (onError) onError(error)
+      return () => {} // Return empty unsubscribe function
+    }
   },
 
   // Add a custom question

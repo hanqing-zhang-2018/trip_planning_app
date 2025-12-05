@@ -20,15 +20,29 @@ function AirbnbVoting({ participants, currentUser }) {
 
   // Real-time listener for airbnbs
   useEffect(() => {
-    if (!currentUser?.tripGroup) return
+    if (!currentUser?.tripGroup) {
+      setLoading(false)
+      return
+    }
 
     setLoading(true)
-    const unsubscribe = airbnbsService.subscribe(tripGroup, (updatedAirbnbs) => {
-      setAirbnbs(updatedAirbnbs)
-      setLoading(false)
-    })
+    try {
+      const unsubscribe = airbnbsService.subscribe(tripGroup, (updatedAirbnbs) => {
+        setAirbnbs(updatedAirbnbs || [])
+        setLoading(false)
+      }, (error) => {
+        console.error('Error loading airbnbs:', error)
+        setAirbnbs([])
+        setLoading(false)
+        alert('Failed to load properties. Please check your Firebase configuration.')
+      })
 
-    return () => unsubscribe()
+      return () => unsubscribe()
+    } catch (error) {
+      console.error('Error setting up airbnbs listener:', error)
+      setAirbnbs([])
+      setLoading(false)
+    }
   }, [tripGroup, currentUser?.tripGroup])
 
   const addAirbnb = async (e) => {

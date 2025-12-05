@@ -35,19 +35,35 @@ function App() {
 
     const tripGroup = currentUser.tripGroup
 
-    // Subscribe to participants
-    const unsubscribeParticipants = participantsService.subscribe(tripGroup, (updatedParticipants) => {
-      setParticipants(updatedParticipants)
-    })
+    try {
+      // Subscribe to participants
+      const unsubscribeParticipants = participantsService.subscribe(
+        tripGroup, 
+        (updatedParticipants) => {
+          setParticipants(updatedParticipants || [])
+        },
+        (error) => {
+          console.error('Error loading participants:', error)
+        }
+      )
 
-    // Subscribe to trip title
-    const unsubscribeTitle = tripTitleService.subscribe(tripGroup, (title) => {
-      setTripTitle(title)
-    })
+      // Subscribe to trip title
+      const unsubscribeTitle = tripTitleService.subscribe(
+        tripGroup, 
+        (title) => {
+          setTripTitle(title || 'Trip Planning')
+        },
+        (error) => {
+          console.error('Error loading trip title:', error)
+        }
+      )
 
-    return () => {
-      unsubscribeParticipants()
-      unsubscribeTitle()
+      return () => {
+        unsubscribeParticipants()
+        unsubscribeTitle()
+      }
+    } catch (error) {
+      console.error('Error setting up App listeners:', error)
     }
   }, [currentUser?.tripGroup])
 
